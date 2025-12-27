@@ -1,226 +1,278 @@
-# 🚀 AugmentCode Unlimited
+# 🚀 Cursor Tools - Hệ thống Quản lý Trial & Rotation
 
-**🏆 业界领先的AugmentCode设备限制解决方案 🏆**
+**Công cụ hỗ trợ tạo và xoay account Cursor Pro trial không giới hạn**
 
-*✅ **完全免费** | 🚫 **无需注册** | 🎯 支持15+主流IDE | 🧠 智能四层清理 | 🛡️ 企业级安全*
+*✅ **Hoàn toàn miễn phí** | 🚫 **Không cần đăng ký** | 🎯 **Tự động hóa hoàn toàn** | 🧠 **Thông minh & An toàn** | 🛡️ **Bảo mật cao***
 
-**🚀 3秒极速清理 | 📊 100%清理完整度 | 🔒 99.9%数据安全性**
+**🚀 Tự động phát hiện token hết hạn | 📊 Dashboard theo dõi real-time | 🔄 Rotation tự động | 🔒 Bảo mật dữ liệu**
 
+---
 
------
+## 🌟 Tổng quan
 
-### 🌟 为什么选择 AugmentCode Unlimited？
+**Cursor Tools** là công cụ hỗ trợ quản lý và xoay account Cursor Pro trial một cách tự động và thông minh. Với hệ thống phát hiện token expiration, rotation engine mạnh mẽ, và giao diện dashboard trực quan, bạn có thể dễ dàng quản lý nhiều account và duy trì quyền truy cập không giới hạn.
 
-在众多AugmentCode限制解决方案中，**AugmentCode Unlimited** 是唯一提供**完整四层精确清理**、**企业级安全备份**与**零配置一键使用**的终极工具。最重要的是，它**完全免费、无需注册**，致力于为每一位开发者提供最纯粹、最自由的AI编程体验。我们不仅解决问题，更关心您的数据安全和使用体验。
+### ✨ Tính năng nổi bật
 
-#### 核心优势
+| **🎯 Tính năng** | **📝 Mô tả** |
+|:---|:---|
+| **🔄 Auto Rotation** | Tự động xoay account khi token hết hạn hoặc bị rate limit |
+| **📊 Trial Dashboard** | Hiển thị real-time: token còn lại, expiration date, account info |
+| **🔍 Token Monitor** | Phát hiện token expiration từ storage.json, database, và log files |
+| **📈 API Monitor** | Theo dõi API health, rate limits, và usage patterns |
+| **🛡️ Advanced Fingerprinting** | Xoay Machine GUID, MAC address để bypass trial detection |
+| **⏰ Scheduled Rotation** | Tự động rotation theo lịch (hybrid: scheduled + reactive) |
+| **🖥️ Windows Service** | Chạy background service để monitoring liên tục |
+| **📜 Rotation History** | Lưu lịch sử rotation và thống kê chi tiết |
+| **🎨 Interactive Menu** | Menu tương tác khi chạy `run.bat` |
+| **🌐 Vietnamese UI** | Giao diện hoàn toàn bằng tiếng Việt |
 
-| **🎯 全面覆盖** | **🧠 智能检测** | **⚡ 极速高效** | **🛡️ 企业级安全** |
-| :--- | :--- | :--- | :--- |
-| 支持JetBrains全系列、VSCode、Cursor、VSCodium等15+主流IDE，一个工具搞定所有。 | 自动识别IDE版本、显示具体待清理内容，让每一步操作都心中有数。 | 3-5秒完成核心清理，通过并行处理和增量检测，比同类工具快3倍以上。 | 智能备份、精确清理、文件锁定、一键恢复，为您的数据安全保驾护航。 |
+---
 
-> ⚠️ **免责声明**: 本项目仅供学习和研究目的，**完全免费**。请在遵守相关软件的使用条款和当地法律法规的前提下使用。使用者需自行承担所有风险。
+## 🚀 Bắt đầu nhanh
 
------
+### Cài đặt
 
-### 🔥 与同类项目对比
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/SalyyS1/Cursor_Tools.git
+   cd Cursor_Tools
+   ```
 
-| 功能特性 | **AugmentCode Unlimited** | `project-a` (Rust) | `project-b` (Python) | `project-c` (Python) |
-| :--- |:--------------------------| :--- | :--- | :--- |
-| **价格与注册** | ✅ **完全免费，无需注册**           | ❓ 未知/可能收费 | ❓ 未知/需要注册 | ❓ 未知 |
-| **IDE支持范围** | ✅ **全部主流IDE**             | ⚠️ 仅JetBrains+VSCode | ⚠️ 仅VSCode | ❌ 仅Cursor |
-| **限制绕过能力** | ✅ **完整四层清理**              | ⚠️ 部分清理 | ⚠️ 基础清理 | ❌ 单层清理 |
-| **图形界面 (GUI)** | ✅ **专业GUI+实时状态**          | ❌ 仅命令行 | ❌ 仅命令行 | ✅ 基础GUI |
-| **智能检测与显示** | ✅ **显示具体清理项**             | ❌ 无详细信息 | ❌ 无详细信息 | ⚠️ 基础检测 |
-| **安全备份与恢复** | ✅ **智能备份+一键恢复**           | ⚠️ 基础备份 | ⚠️ 基础备份 | ❌ 无备份 |
-| **依赖管理** | ✅ **一键自动安装**              | ⚠️ 手动安装 | ⚠️ 手动安装 | ⚠️ 手动安装 |
-| **文件锁定保护** | ✅ **防重写保护**               | ✅ 支持 | ❌ 不支持 | ❌ 不支持 |
-| **进程自动管理** | ✅ **自动关闭IDE**             | ❌ 需手动关闭 | ❌ 需手动关闭 | ⚠️ 部分支持 |
-| **跨平台支持** | ⚠️ **Windows**              | ✅ 支持 | ⚠️ 主要Windows | ⚠️ 主要Windows |
-| **语言与可维护性** | 🐍 **Python (易于维护扩展)**    | 🦀 Rust (编译型, 难维护) | 🐍 Python | 🐍 Python |
+2. **Cài đặt dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
------
+3. **Chạy ứng dụng**
+   ```bash
+   # Sử dụng menu tương tác (khuyến nghị)
+   run.bat
+   
+   # Hoặc chạy GUI trực tiếp
+   python gui_main.py
+   ```
 
-### 🚀 快速开始
+### Sử dụng Menu tương tác
 
-#### 使用 run.bat (推荐)
+Chạy `run.bat` để mở menu tương tác:
 
-1. **双击 `run.bat`** 打开交互式菜单
-2. 选择所需功能：
-   - **[1] Launch GUI** - 启动图形界面
-   - **[2] Quick Rotation** - 快速旋转
-   - **[3] Check Status** - 检查状态
-   - **[4] Service Management** - 服务管理
-   - **[5] View Rotation History** - 查看旋转历史
-   - **[6] API Dashboard** - API 仪表板
-   - **[7] Configuration** - 配置目录
+```
+╔══════════════════════════════════════╗
+║   Cursor Tools - Interactive Menu    ║
+╚══════════════════════════════════════╝
 
-#### 使用 GUI
-
-- **菜单栏**: File, Tools, View, Help
-- **标签页**: Main, Trial Dashboard, Control Panel, Rotation History, API Dashboard
-- **快捷键**: Ctrl+R (旋转), Ctrl+Q (退出), Ctrl+1-5 (切换标签)
-
-详细菜单指南请参考 [MENU_GUIDE.md](./MENU_GUIDE.md)
-
-### ✨ 核心功能详解
-
-#### 🛡️ 企业级安全特性
-
-* **智能备份**: 所有清理操作前自动创建带时间戳的备份。GUI支持备份浏览和**一键恢复**。
-* **精确清理**: **只清理AugmentCode相关数据**，绝不触碰其他IDE配置和插件数据，完美保护您的开发环境。
-* **文件锁定**: 清理设备ID后可自动锁定相关文件，防止被IDE自动还原。
-* **完整性验证**: 确保清理操作的完整性和安全性，出现异常可自动回滚。
-* **进程管理**: 清理前自动检测并请求关闭相关IDE进程，避免文件占用。
-
-#### 🎨 卓越用户体验
-
-* **零配置启动**: 提供一键启动脚本，自动检查并安装所需依赖。
-* **专业GUI界面**: 实时显示检测到的IDE安装状态和具体待清理内容，操作过程一目了然。
-* **多种部署方式**: 支持Python源码直接运行，也支持打包为**完全免费、免安装、零依赖的独立exe文件**。
-* **详细日志记录**: 在 `logs/` 目录下生成完整的操作日志，便于问题排查。
-
-#### 🧠 智能检测与状态显示
-
-清理前，工具会智能扫描您的系统，并清晰地展示将要执行的操作，例如：
-
-```log
-🆔 设备指纹: ⚠️ 8个文件待更新
-   • JetBrains deviceId: a1b2c3d4...
-   • VSCode machineId: e5f6g7h8...
-   • Cursor storage.json: machineId=i9j0k1l2..., deviceId=m3n4o5p6...
-
-🗃️ OAuth记录: ⚠️ 15条待清理
-   • VSCode state.vscdb: 发现 8 条相关记录
-   • Cursor state.vscdb: 发现 7 条相关记录
-
-📁 工作区目录: ⚠️ 3个待清理
-   • VSCode: 检测到 12 个项目 (其中 5 个有AugmentCode使用痕迹)
-   • Cursor: 检测到 8 个项目 (其中 3 个有AugmentCode使用痕迹)
+[1] Launch GUI - Khởi động giao diện
+[2] Quick Rotation - Xoay account nhanh
+[3] Check Status - Kiểm tra trạng thái
+[4] Service Management - Quản lý service
+[5] View Rotation History - Xem lịch sử
+[6] API Dashboard - Bảng điều khiển API
+[7] Configuration - Cấu hình
+[0] Exit - Thoát
 ```
 
------
+---
 
-### 📦 安装与使用
+## 📊 Trial Dashboard
 
-#### 🚀 方法一：下载Release可执行文件 (推荐，最简单)
+Dashboard hiển thị thông tin real-time về account Cursor của bạn:
 
-1.  前往本项目的 [可疑链接已删除] 页面。
-2.  下载最新版本的 `AugmentCode-Unlimited.exe`。
-3.  **完全免费，无需注册，解压即用**。
+### Thông tin hiển thị
 
-#### 🛠️ 方法二：从源码运行 (适合开发者)
+- **🆔 Token Status**: Trạng thái token (Valid/Expired)
+- **📊 Remaining Tokens**: Số token còn lại (tự động cập nhật)
+- **📅 Expiration Date**: Ngày hết hạn trial
+- **⏳ Days Remaining**: Số ngày còn lại
+- **👤 Account Info**: Email, Plan, Subscription type
+- **🌐 API Status**: Trạng thái API health và rate limits
 
-1.  **克隆项目**
-    ```bash
-    git clone https://github.com/your-username/augment-unlimited.git
-    cd augment-unlimited
-    ```
-2.  **一键启动 (Windows)**
-    * 双击 `启动GUI.bat`。
-    * 脚本会自动为你创建虚拟环境、安装依赖并启动程序。
-3.  **手动运行 (所有平台)**
-    ```bash
-    # (可选，推荐) 创建并激活Python虚拟环境
-    python -m venv venv
-    source venv/bin/activate  # on Linux/macOS
-    venv\Scripts\activate     # on Windows
+### Tính năng đặc biệt
 
-    # 安装依赖
-    pip install -r requirements.txt
+- **Auto-refresh**: Tự động cập nhật mỗi 5 giây
+- **Debug Info**: Nút "Show Debug Info" để xem chi tiết
+- **Color Coding**: Màu sắc thay đổi theo trạng thái (xanh/vàng/đỏ)
 
-    # 运行GUI
-    python src/gui.py
+---
 
-    # 或运行命令行版本
-    python src/main.py --help
-    ```
+## 🔄 Rotation System
 
------
+### Các trigger tự động
 
-### 🚀 使用指南
+1. **Token Expired**: Phát hiện token hết hạn từ:
+   - `storage.json` (globalStorage)
+   - `state.vscdb` database
+   - Log files
 
-#### 图形界面 (GUI) 操作
+2. **Rate Limited**: Phát hiện rate limit từ:
+   - API response headers
+   - Log file patterns
+   - Usage pattern analysis
 
-1.  **启动**: 直接运行 `.exe` 文件或 `start.bat` 脚本。
-2.  **检测**: 程序启动后会自动检测系统中的IDE和相关数据，并在界面上显示。
-3.  **清理**: 点击 **"🚀 开始清理"** 按钮，程序将自动完成所有操作。
-4.  **重启IDE**: 清理完成后，关闭本工具，重启你的IDE（如Cursor, VSCode），即可**使用新账户登录**。
-5.  **(可选)恢复**: 如果遇到问题，可点击“恢复备份”按钮，选择之前的备份进行一键恢复。
+3. **Scheduled**: Rotation theo lịch (mặc định: 12 giờ)
 
-#### 命令行 (CLI) 操作（高级用户）
+4. **Manual**: Trigger thủ công từ GUI hoặc menu
 
-```bash
-# 查看系统信息和待清理项
-python src/main.py --info
+### Quy trình rotation
 
-# 只处理特定IDE
-python src/main.py --jetbrains-only  # 只处理JetBrains
-python src/main.py --vscode-only      # 只处理VSCode系列
-
-# 高级选项
-python src/main.py --no-backup       # 跳过备份（更快但有风险）
-python src/main.py --verbose         # 输出更详细的日志
-python src/main.py --help            # 查看完整帮助
+```
+1. Pre-validation → Kiểm tra điều kiện
+2. Backup → Tạo backup tự động
+3. Clean → Dọn dẹp storage và database
+4. Advanced Fingerprinting → Xoay Machine GUID, MAC
+5. Post-validation → Xác minh rotation thành công
+6. Rollback (nếu cần) → Khôi phục nếu lỗi
 ```
 
------
+---
 
-### 🔧 工作原理：独有的四层精确清理技术
+## 🛡️ Advanced Fingerprinting
 
-AugmentCode通过以下四个层面实施设备限制，我们的工具针对每一层都设计了精确的绕过策略：
+Hệ thống có thể xoay các fingerprint sau để bypass trial detection:
 
-1.  **设备指纹识别 (Device Fingerprinting)**
-    * **限制机制:** 在IDE的配置文件（如 `storage.json`, `PermanentDeviceId`）中写入唯一的设备ID。
-    * **绕过策略:** **重置设备指纹**。生成符合格式要求的全新随机ID，并替换掉旧ID。
-2.  **全局数据库追踪 (Global Database Tracking)**
-    * **限制机制:** 在全局数据库（如 `state.vscdb`）中存储OAuth记录、会话Token和认证信息。
-    * **绕过策略:** **精确数据库清理**。仅删除与AugmentCode相关的键值对，不影响其他插件数据。
-3.  **工作区绑定限制 (Workspace Binding)**
-    * **限制机制:** 在项目的工作区存储（`workspaceStorage`）中记录特定项目下的使用历史和绑定状态。
-    * **绕过策略:** **无损工作区清理**。遍历每个工作区，仅清理其中的AugmentCode相关数据，**完美保留用户对其他所有插件的项目级配置**。
-4.  **网络指纹追踪 (Network Fingerprinting)**
-    * **限制机制:** 通过浏览器缓存、Cookie等追踪网络会话。
-    * **绕过策略:** **提供安全建议**。工具默认不触碰浏览器数据以防破坏环境，但在高级选项中为用户提供手动、安全地清理浏览器相关数据的方法指导。
+- **Windows Machine GUID**: Registry modification
+- **MAC Address**: Network adapter spoofing
+- **Storage IDs**: VSCode/Cursor machineId, deviceId
+- **Database Records**: OAuth tokens, session data
 
------
+> ⚠️ **Lưu ý**: Advanced fingerprinting yêu cầu quyền Administrator
 
-### 🛡️ 安全特性
+---
 
-* **自动备份与一键恢复**: 所有写操作前，自动在 `~/.augment_unlimiter_backups/` 目录下创建带时间戳的备份。支持在GUI中一键恢复到任意历史备份点。
-* **权限管理与文件锁定**: 自动处理文件只读等权限问题，并可在清理后锁定关键ID文件，防止IDE自动还原。
-* **原子操作与回滚**: 清理过程被设计为原子操作，若中途出现严重错误，会尝试自动回滚已做的修改，确保数据一致性。
+## ⚙️ Cấu hình
 
------
+### Rotation Config
 
-### 🔧 故障排除
+Chỉnh sửa `config/settings.py`:
 
-* **权限错误**: 在Windows上，请尝试右键点击 `.exe` 或 `.bat` 文件，选择“以管理员身份运行”。
-* **未检测到IDE**: 请确保你的IDE是标准路径安装。可以运行 `python src/main.py --info` 查看工具的检测路径。
-* **清理失败**: 请确保在执行清理前已完全关闭所有相关的IDE进程。查看 `logs/` 目录下的日志文件获取详细错误信息。
+```python
+ROTATION_CONFIG = {
+    "scheduled_interval_hours": 12.0,  # Lịch rotation
+    "enable_token_check": True,         # Bật kiểm tra token
+    "enable_rate_limit_check": True,    # Bật kiểm tra rate limit
+    "enable_scheduled_rotation": True,   # Bật rotation theo lịch
+    "enable_advanced_fingerprint": False,  # Bật advanced fingerprinting
+}
+```
 
------
+### Service Config
 
-### 🤝 贡献与支持
+Cấu hình Windows Service:
 
-欢迎通过提交 **Issue** 报告问题或提出建议，也欢迎通过 **Pull Request** 直接参与项目改进！
+```python
+SERVICE_CONFIG = {
+    "poll_interval_seconds": 60,       # Tần suất kiểm tra
+    "state_file_path": "rotation_state.json",
+    "notification_enabled": True,       # Bật thông báo
+}
+```
 
+---
 
+## 📁 Cấu trúc Project
 
-### 🌟 Star History
+```
+Cursor_Tools/
+├── core/                    # Core modules
+│   ├── token_monitor.py     # Token expiration detection
+│   ├── api_monitor.py       # API health monitoring
+│   ├── rotation_engine.py   # Rotation logic
+│   ├── rotation_scheduler.py # Scheduling system
+│   └── advanced_fingerprint.py # Fingerprinting
+├── gui/                     # GUI components
+│   ├── trial_dashboard.py   # Trial dashboard widget
+│   ├── api_dashboard.py     # API dashboard widget
+│   ├── control_panel.py     # Control panel
+│   └── rotation_history.py  # History viewer
+├── service/                 # Windows Service
+│   ├── rotation_service.py  # Background service
+│   ├── service_manager.py  # Service management
+│   └── scheduled_task.py    # Scheduled tasks
+├── utils/                   # Utilities
+│   ├── rotation_history.py  # History storage
+│   ├── account_pool.py      # Account management
+│   └── notifier.py          # Notifications
+├── config/                  # Configuration
+│   └── settings.py          # Main settings
+├── locales/                 # Localization
+│   └── vi.json              # Vietnamese translations
+├── gui_main.py              # Main GUI entry point
+├── run.bat                   # Interactive menu
+└── requirements.txt          # Dependencies
+```
 
-如果这个项目对你有帮助，请给个⭐支持一下！你的Star是我们持续改进的最大动力！
+---
 
-https://github.com/wozhenbang2004/augetment-cursor-unlimited.git
+## 🔧 Troubleshooting
 
------
+### Token không được phát hiện
 
-\<div align="center"\>
+1. Kiểm tra Cursor đang mở folder nào
+2. Nhấn "Show Debug Info" trong Trial Dashboard
+3. Kiểm tra log files trong `logs/` directory
+4. Đảm bảo đang check đúng `globalStorage` (không phải `workspaceStorage`)
 
-**⭐ 如果觉得有用，请给个Star支持一下！这是一个完全免费的开源工具！ ⭐**
+### Rotation không hoạt động
 
-**🔥 让更多开发者受益，一起打造最强的AugmentCode解决方案！ 🔥**
+1. Kiểm tra quyền Administrator (cho advanced fingerprinting)
+2. Đảm bảo Cursor đã đóng hoàn toàn
+3. Kiểm tra service status: `python -m service.service_manager status`
+4. Xem logs trong `logs/rotation.log`
 
-Made with ❤️ by [Kayokoi](https://github.com/wozhenbang2004)
+### Dashboard hiển thị "Unknown"
 
-\</div\>
+1. Đảm bảo Cursor đang mở
+2. Kiểm tra `storage.json` có tồn tại trong `globalStorage`
+3. Sử dụng "Show Debug Info" để xem keys có sẵn
+4. Có thể cần thêm patterns trong `token_monitor.py`
+
+---
+
+## 🛡️ Bảo mật & Quyền riêng tư
+
+- **Local Only**: Tất cả dữ liệu chỉ lưu local, không gửi lên server
+- **Backup Tự động**: Mọi thay đổi đều được backup trước
+- **Rollback Support**: Có thể khôi phục nếu có lỗi
+- **No Telemetry**: Không thu thập dữ liệu người dùng
+
+---
+
+## 📝 License
+
+Xem file [LICENSE](./LICENSE) để biết thêm chi tiết.
+
+---
+
+## 🤝 Đóng góp
+
+Mọi đóng góp đều được chào đón! Vui lòng:
+
+1. Fork repository
+2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Mở Pull Request
+
+---
+
+## ⚠️ Disclaimer
+
+Công cụ này chỉ dành cho mục đích học tập và nghiên cứu. Người dùng tự chịu trách nhiệm về việc sử dụng công cụ này. Vui lòng tuân thủ các điều khoản sử dụng của Cursor và pháp luật địa phương.
+
+---
+
+## 🌟 Star History
+
+Nếu project này hữu ích, hãy cho một ⭐ để ủng hộ! Star của bạn là động lực lớn nhất để chúng tôi tiếp tục cải thiện!
+
+---
+
+<div align="center">
+
+**⭐ Nếu thấy hữu ích, hãy cho một Star để ủng hộ! Đây là công cụ hoàn toàn miễn phí và mã nguồn mở! ⭐**
+
+**🔥 Hãy để nhiều developer hơn được hưởng lợi, cùng nhau xây dựng giải pháp Cursor Tools tốt nhất! 🔥**
+
+Made with ❤️ by [SalyyS1](https://github.com/SalyyS1)
+
+</div>
