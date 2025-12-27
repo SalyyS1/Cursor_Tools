@@ -196,6 +196,21 @@ ROTATION_CONFIG = {
     "max_rotation_retries": 3,             # Maximum rotation retries
 }
 
+# Import service configuration
+try:
+    from config.service_config import (
+        SERVICE_CONFIG,
+        SCHEDULED_TASK_CONFIG,
+        COORDINATION_CONFIG,
+        NOTIFICATION_CONFIG,
+    )
+except ImportError:
+    # Fallback if service_config not available
+    SERVICE_CONFIG = {}
+    SCHEDULED_TASK_CONFIG = {}
+    COORDINATION_CONFIG = {}
+    NOTIFICATION_CONFIG = {}
+
 # Export all configurations
 __all__ = [
     "VERSION",

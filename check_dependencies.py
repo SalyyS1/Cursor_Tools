@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-依赖检查和自动安装脚本
+Kiểm tra và tự động cài đặt dependencies
 """
 
 import sys
@@ -11,16 +11,16 @@ import os
 from pathlib import Path
 
 def check_python_version():
-    """检查Python版本"""
+    """Kiểm tra phiên bản Python"""
     if sys.version_info < (3, 8):
-        print("❌ Python版本过低，需要Python 3.8或更高版本")
-        print(f"   当前版本: {sys.version}")
+        print("❌ Phiên bản Python quá thấp, cần Python 3.8 hoặc cao hơn")
+        print(f"   Phiên bản hiện tại: {sys.version}")
         return False
-    print(f"✅ Python版本检查通过: {sys.version.split()[0]}")
+    print(f"✅ Kiểm tra phiên bản Python thành công: {sys.version.split()[0]}")
     return True
 
 def install_package(package_name, use_mirror=False):
-    """安装Python包"""
+    """Cài đặt package Python"""
     try:
         if use_mirror:
             cmd = [sys.executable, "-m", "pip", "install", package_name, 
@@ -31,95 +31,95 @@ def install_package(package_name, use_mirror=False):
         result = subprocess.run(cmd, capture_output=True, text=True)
         return result.returncode == 0
     except Exception as e:
-        print(f"   安装失败: {e}")
+        print(f"   Cài đặt thất bại: {e}")
         return False
 
 def check_and_install_package(package_name, import_name=None):
-    """检查并安装包"""
+    """Kiểm tra và cài đặt package"""
     if import_name is None:
         import_name = package_name
     
     try:
         importlib.import_module(import_name)
-        print(f"✅ {package_name} 已安装")
+        print(f"✅ {package_name} đã được cài đặt")
         return True
     except ImportError:
-        print(f"⚠️ {package_name} 未安装，正在安装...")
+        print(f"⚠️ {package_name} chưa được cài đặt, đang cài đặt...")
         
-        # 先尝试正常安装
+        # Thử cài đặt bình thường trước
         if install_package(package_name):
-            print(f"✅ {package_name} 安装成功")
+            print(f"✅ {package_name} cài đặt thành công")
             return True
         
-        # 如果失败，尝试使用国内镜像
-        print(f"   尝试使用国内镜像源...")
+        # Nếu thất bại, thử dùng mirror nội địa
+        print(f"   Đang thử dùng mirror nội địa...")
         if install_package(package_name, use_mirror=True):
-            print(f"✅ {package_name} 安装成功（使用镜像源）")
+            print(f"✅ {package_name} cài đặt thành công (dùng mirror)")
             return True
         
-        print(f"❌ {package_name} 安装失败")
+        print(f"❌ {package_name} cài đặt thất bại")
         return False
 
 def install_from_requirements():
-    """从requirements.txt安装依赖"""
+    """Cài đặt dependencies từ requirements.txt"""
     requirements_file = Path("requirements.txt")
     if not requirements_file.exists():
         return False
     
-    print("📦 从requirements.txt安装依赖...")
+    print("📦 Đang cài đặt dependencies từ requirements.txt...")
     try:
-        # 先尝试正常安装
+        # Thử cài đặt bình thường trước
         cmd = [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"]
         result = subprocess.run(cmd, capture_output=True, text=True)
         
         if result.returncode == 0:
-            print("✅ requirements.txt 依赖安装成功")
+            print("✅ Cài đặt dependencies từ requirements.txt thành công")
             return True
         
-        # 如果失败，尝试使用国内镜像
-        print("   尝试使用国内镜像源...")
+        # Nếu thất bại, thử dùng mirror nội địa
+        print("   Đang thử dùng mirror nội địa...")
         cmd = [sys.executable, "-m", "pip", "install", "-r", "requirements.txt",
                "-i", "https://pypi.tuna.tsinghua.edu.cn/simple/"]
         result = subprocess.run(cmd, capture_output=True, text=True)
         
         if result.returncode == 0:
-            print("✅ requirements.txt 依赖安装成功（使用镜像源）")
+            print("✅ Cài đặt dependencies từ requirements.txt thành công (dùng mirror)")
             return True
         
-        print("❌ requirements.txt 依赖安装失败")
-        print(f"   错误信息: {result.stderr}")
+        print("❌ Cài đặt dependencies từ requirements.txt thất bại")
+        print(f"   Thông tin lỗi: {result.stderr}")
         return False
         
     except Exception as e:
-        print(f"❌ 安装过程出错: {e}")
+        print(f"❌ Lỗi trong quá trình cài đặt: {e}")
         return False
 
 def main():
-    """主函数"""
-    print("🔍 检查Python环境和依赖...")
+    """Hàm chính"""
+    print("🔍 Đang kiểm tra môi trường Python và dependencies...")
     print()
     
-    # 检查Python版本
+    # Kiểm tra phiên bản Python
     if not check_python_version():
         return False
     
     print()
     
-    # 核心依赖列表
+    # Danh sách dependencies cốt lõi
     core_dependencies = [
-        ("psutil", "psutil"),  # (包名, 导入名)
+        ("psutil", "psutil"),  # (tên package, tên import)
     ]
     
-    # 检查是否有requirements.txt
+    # Kiểm tra xem có requirements.txt không
     if Path("requirements.txt").exists():
-        print("📋 发现requirements.txt文件")
+        print("📋 Đã phát hiện file requirements.txt")
         if install_from_requirements():
             print()
-            print("✅ 所有依赖安装完成")
+            print("✅ Tất cả dependencies đã được cài đặt")
             return True
     
-    # 逐个检查核心依赖
-    print("📦 检查核心依赖...")
+    # Kiểm tra từng dependency cốt lõi
+    print("📦 Đang kiểm tra dependencies cốt lõi...")
     all_success = True
     
     for package_name, import_name in core_dependencies:
@@ -129,12 +129,12 @@ def main():
     print()
     
     if all_success:
-        print("✅ 所有依赖检查完成")
+        print("✅ Tất cả dependencies đã được kiểm tra")
         return True
     else:
-        print("❌ 部分依赖安装失败")
+        print("❌ Một số dependencies cài đặt thất bại")
         print()
-        print("手动安装命令:")
+        print("Lệnh cài đặt thủ công:")
         for package_name, _ in core_dependencies:
             print(f"   pip install {package_name}")
         return False
@@ -142,5 +142,5 @@ def main():
 if __name__ == "__main__":
     success = main()
     if not success:
-        input("\n按回车键退出...")
+        input("\nNhấn Enter để thoát...")
         sys.exit(1)

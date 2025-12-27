@@ -2,7 +2,7 @@
 """
 Augment Cleaner Unified - GUI Version
 
-图形界面版本的 Augment Cleaner Unified
+Phiên bản giao diện đồ họa của Augment Cleaner Unified
 """
 
 import tkinter as tk
@@ -13,8 +13,14 @@ import os
 from pathlib import Path
 import time
 
-# 添加项目根目录到路径
+# Thêm thư mục gốc dự án vào đường dẫn
 sys.path.insert(0, str(Path(__file__).parent))
+
+# Import i18n first to ensure t() is available
+from utils.i18n import t, init_translator
+
+# Khởi tạo translator ngay sau import
+init_translator()
 
 from config.settings import VERSION, APP_NAME
 from utils.paths import PathManager
@@ -25,7 +31,7 @@ from core.db_cleaner import DatabaseCleaner
 
 
 class ToolTip:
-    """工具提示类"""
+    """Lớp tooltip (gợi ý)"""
     def __init__(self, widget, text):
         self.widget = widget
         self.text = text
@@ -38,7 +44,7 @@ class ToolTip:
             return
 
         try:
-            # 尝试获取widget的位置
+            # Thử lấy vị trí widget
             x = self.widget.winfo_rootx() + 25
             y = self.widget.winfo_rooty() + 25
         except:
@@ -60,18 +66,18 @@ class ToolTip:
 
 
 class AugmentCleanerGUI:
-    """Augment Cleaner Unified 图形界面"""
+    """Giao diện đồ họa Augment Cleaner Unified"""
     
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("🚀 Augment Unlimited Pro - 下一代智能AugmentCode限制绕过系统")
+        self.root.title(t("app.title"))
         self.root.geometry("1200x800")
         self.root.resizable(True, True)
 
-        # 设置现代化主题
+        # Thiết lập theme hiện đại
         self.setup_modern_theme()
 
-        # 设置图标（如果存在）
+        # Thiết lập icon (nếu có)
         try:
             icon_path = Path(__file__).parent / "icon.ico"
             if icon_path.exists():
@@ -79,52 +85,52 @@ class AugmentCleanerGUI:
         except:
             pass
         
-        # 初始化组件
+        # Khởi tạo các component
         self.path_manager = None
         self.backup_manager = None
         self.jetbrains_handler = None
         self.vscode_handler = None
         self.database_cleaner = None
 
-        # 创建界面
+        # Tạo giao diện
         self.create_widgets()
         self.initialize_components()
 
-        # 禁用智能监控系统 - 太耗性能
+        # Tắt hệ thống giám sát thông minh - quá tốn tài nguyên
         # self.root.after(1000, self.start_intelligent_monitoring)
 
     def setup_modern_theme(self):
-        """设置现代化主题 - 超越 augment-new 的高级主题"""
+        """Thiết lập theme hiện đại - Theme cao cấp vượt trội augment-new"""
         try:
-            # 设置深色主题
+            # Thiết lập theme tối
             self.root.configure(bg='#1a1a1a')
 
-            # 配置ttk样式
+            # Cấu hình style ttk
             style = ttk.Style()
 
-            # 使用更现代的主题
+            # Sử dụng theme hiện đại hơn
             available_themes = style.theme_names()
             if 'clam' in available_themes:
                 style.theme_use('clam')
             elif 'alt' in available_themes:
                 style.theme_use('alt')
 
-            # 自定义颜色方案 - 比 augment-new 更高级
+            # Tùy chỉnh bảng màu - Cao cấp hơn augment-new
             colors = {
-                'bg_primary': '#1a1a1a',      # 主背景 - 更深的黑色
-                'bg_secondary': '#2d2d2d',    # 次要背景
-                'bg_accent': '#3d3d3d',       # 强调背景
-                'text_primary': '#ffffff',     # 主文本
-                'text_secondary': '#b0b0b0',   # 次要文本
-                'accent_blue': '#0078d4',      # 蓝色强调
-                'accent_green': '#107c10',     # 绿色强调
-                'accent_orange': '#ff8c00',    # 橙色强调
-                'accent_red': '#d13438',       # 红色强调
-                'border': '#404040',           # 边框颜色
-                'hover': '#404040'             # 悬停颜色
+                'bg_primary': '#1a1a1a',      # Nền chính - Đen sâu hơn
+                'bg_secondary': '#2d2d2d',    # Nền phụ
+                'bg_accent': '#3d3d3d',       # Nền nhấn mạnh
+                'text_primary': '#ffffff',     # Văn bản chính
+                'text_secondary': '#b0b0b0',   # Văn bản phụ
+                'accent_blue': '#0078d4',      # Nhấn mạnh xanh dương
+                'accent_green': '#107c10',     # Nhấn mạnh xanh lá
+                'accent_orange': '#ff8c00',    # Nhấn mạnh cam
+                'accent_red': '#d13438',       # Nhấn mạnh đỏ
+                'border': '#404040',           # Màu viền
+                'hover': '#404040'             # Màu khi hover
             }
 
-            # 配置各种控件样式
+            # Cấu hình style cho các control
             style.configure('TLabel',
                           background=colors['bg_primary'],
                           foreground=colors['text_primary'])
@@ -148,7 +154,7 @@ class AugmentCleanerGUI:
                      background=[('active', colors['hover']),
                                ('pressed', colors['bg_accent'])])
 
-            # 强调按钮样式
+            # Style nút nhấn mạnh
             style.configure('Accent.TButton',
                           background=colors['accent_blue'],
                           foreground='white',
@@ -177,7 +183,7 @@ class AugmentCleanerGUI:
                      background=[('selected', colors['accent_blue']),
                                ('active', colors['hover'])])
 
-            # 进度条样式
+            # Style thanh tiến trình
             style.configure('TProgressbar',
                           background=colors['accent_blue'],
                           troughcolor=colors['bg_secondary'],
@@ -185,10 +191,10 @@ class AugmentCleanerGUI:
                           lightcolor=colors['accent_blue'],
                           darkcolor=colors['accent_blue'])
 
-            self.log("✅ 现代化主题设置完成")
+            self.log(t("messages.init.theme_setup_success"))
 
         except Exception as e:
-            self.log(f"⚠️ 主题设置失败，使用默认主题: {e}")
+            self.log(t("messages.init.theme_setup_failed", error=str(e)))
 
     def start_intelligent_monitoring(self):
         """启动智能监控系统 - 超越 augment-new 的核心功能"""
@@ -298,44 +304,44 @@ class AugmentCleanerGUI:
                                font=("Arial", 20, "bold"))
         title_label.pack()
 
-        subtitle_label = ttk.Label(title_frame, text="下一代智能AugmentCode限制绕过系统",
+        subtitle_label = ttk.Label(title_frame, text=t("app.subtitle"),
                                   font=("Arial", 10), foreground="gray")
         subtitle_label.pack()
 
-        version_label = ttk.Label(title_frame, text=f"v{VERSION} - 超越所有同类工具",
+        version_label = ttk.Label(title_frame, text=t("app.version", version=VERSION),
                                  font=("Arial", 8), foreground="blue")
         version_label.pack()
         
-        # 状态信息框架
-        status_frame = ttk.LabelFrame(main_frame, text="系统状态", padding="10")
+        # Khung thông tin trạng thái
+        status_frame = ttk.LabelFrame(main_frame, text=t("ui.status.title"), padding="10")
         status_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         status_frame.columnconfigure(1, weight=1)
         
-        # AugmentCode限制反制状态标签
-        self.device_id_status = ttk.Label(status_frame, text="🆔 设备ID限制: 检测中...")
+        # Nhãn trạng thái phản công giới hạn AugmentCode
+        self.device_id_status = ttk.Label(status_frame, text=t("ui.status.device_id"))
         self.device_id_status.grid(row=0, column=0, sticky=tk.W, pady=2)
 
-        self.database_status = ttk.Label(status_frame, text="🗃️ 数据库记录: 检测中...")
+        self.database_status = ttk.Label(status_frame, text=t("ui.status.database"))
         self.database_status.grid(row=1, column=0, sticky=tk.W, pady=2)
 
-        self.workspace_status = ttk.Label(status_frame, text="📁 工作区记录: 检测中...")
+        self.workspace_status = ttk.Label(status_frame, text=t("ui.status.workspace"))
         self.workspace_status.grid(row=2, column=0, sticky=tk.W, pady=2)
 
-        self.network_status = ttk.Label(status_frame, text="🌐 网络指纹: 检测中...")
+        self.network_status = ttk.Label(status_frame, text=t("ui.status.network"))
         self.network_status.grid(row=3, column=0, sticky=tk.W, pady=2)
         
-        # 刷新按钮
-        refresh_btn = ttk.Button(status_frame, text="刷新状态", command=self.refresh_status)
+        # Nút làm mới
+        refresh_btn = ttk.Button(status_frame, text=t("ui.status.refresh"), command=self.refresh_status)
         refresh_btn.grid(row=0, column=1, rowspan=4, sticky=tk.E, padx=(10, 0))
         
-        # 选项变量 - 按AugmentCode限制方式分组
+        # Biến tùy chọn - Nhóm theo cách giới hạn AugmentCode
         self.bypass_device_id = tk.BooleanVar(value=True)
         self.bypass_database = tk.BooleanVar(value=True)
         self.bypass_workspace = tk.BooleanVar(value=True)
-        self.bypass_network = tk.BooleanVar(value=False)  # 网络指纹默认关闭
+        self.bypass_network = tk.BooleanVar(value=False)  # Dấu vết mạng mặc định tắt
 
-        # AugmentCode限制反制选择框架
-        bypass_frame = ttk.LabelFrame(main_frame, text="🎯 选择要反制的AugmentCode限制", padding="15")
+        # Khung chọn phản công giới hạn AugmentCode
+        bypass_frame = ttk.LabelFrame(main_frame, text=t("ui.bypass.title"), padding="15")
         bypass_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         bypass_frame.columnconfigure(0, weight=1)
         bypass_frame.columnconfigure(1, weight=1)
@@ -344,12 +350,12 @@ class AugmentCleanerGUI:
         device_id_frame = ttk.Frame(bypass_frame)
         device_id_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=5)
 
-        device_id_cb = ttk.Checkbutton(device_id_frame, text="🆔 设备ID限制反制",
+        device_id_cb = ttk.Checkbutton(device_id_frame, text=t("ui.bypass.device_id"),
                                       variable=self.bypass_device_id)
         device_id_cb.pack(anchor=tk.W)
-        self.create_tooltip(device_id_cb, "反制AugmentCode的设备ID检测:\n• IDEA/PyCharm/WebStorm等: PermanentDeviceId, PermanentUserId\n• VSCode/Cursor: machineId, devDeviceId, sqmId\n• 自动生成新ID并锁定文件")
+        self.create_tooltip(device_id_cb, t("ui.bypass.device_id_desc"))
 
-        device_id_desc = ttk.Label(device_id_frame, text="IDEA, PyCharm, VSCode, Cursor\n设备唯一标识符",
+        device_id_desc = ttk.Label(device_id_frame, text=t("ui.bypass.device_id_desc"),
                                   font=("Arial", 8), foreground="gray")
         device_id_desc.pack(anchor=tk.W, pady=(2, 0))
 
@@ -357,12 +363,12 @@ class AugmentCleanerGUI:
         database_frame = ttk.Frame(bypass_frame)
         database_frame.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=5)
 
-        database_cb = ttk.Checkbutton(database_frame, text="🗃️ 数据库记录反制",
+        database_cb = ttk.Checkbutton(database_frame, text=t("ui.bypass.database"),
                                      variable=self.bypass_database)
         database_cb.pack(anchor=tk.W)
-        self.create_tooltip(database_cb, "清理AugmentCode的使用记录:\n• VSCode/Cursor: state.vscdb 登录状态\n• 浏览器: 历史记录、Cookie\n• 自动备份并清理相关记录")
+        self.create_tooltip(database_cb, t("ui.bypass.database_desc"))
 
-        database_desc = ttk.Label(database_frame, text="登录状态、使用记录\n历史数据清理",
+        database_desc = ttk.Label(database_frame, text=t("ui.bypass.database_desc"),
                                  font=("Arial", 8), foreground="gray")
         database_desc.pack(anchor=tk.W, pady=(2, 0))
 
@@ -370,75 +376,75 @@ class AugmentCleanerGUI:
         workspace_frame = ttk.Frame(bypass_frame)
         workspace_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), padx=5, pady=(10, 0))
 
-        workspace_cb = ttk.Checkbutton(workspace_frame, text="� 工作区记录反制",
+        workspace_cb = ttk.Checkbutton(workspace_frame, text=t("ui.bypass.workspace"),
                                       variable=self.bypass_workspace)
         workspace_cb.pack(anchor=tk.W)
-        self.create_tooltip(workspace_cb, "清理项目使用痕迹:\n• VSCode/Cursor: workspaceStorage 项目记录\n• IDEA/PyCharm等: 项目配置和历史\n• 清理所有项目使用记录")
+        self.create_tooltip(workspace_cb, "Dọn dẹp dấu vết sử dụng dự án:\n• VSCode/Cursor: workspaceStorage bản ghi dự án\n• IDEA/PyCharm: Cấu hình và lịch sử dự án\n• Dọn dẹp tất cả bản ghi sử dụng dự án")
 
-        workspace_desc = ttk.Label(workspace_frame, text="项目使用记录\n工作区历史清理",
-                                  font=("Arial", 8), foreground="gray")
+        workspace_desc = ttk.Label(workspace_frame, text=t("ui.bypass.workspace_desc"),
+                                  font=("Segoe UI", 9), foreground="#8b949e")
         workspace_desc.pack(anchor=tk.W, pady=(2, 0))
 
         # 网络指纹限制反制选项
         network_frame = ttk.Frame(bypass_frame)
         network_frame.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=5, pady=(10, 0))
 
-        network_cb = ttk.Checkbutton(network_frame, text="🌐 网络指纹反制",
+        network_cb = ttk.Checkbutton(network_frame, text=t("ui.bypass.network"),
                                     variable=self.bypass_network)
         network_cb.pack(anchor=tk.W)
-        self.create_tooltip(network_cb, "反制网络层面检测:\n• 浏览器指纹清理\n• Canvas、WebGL指纹重置\n• 网络缓存清理\n⚠️ 可能影响其他应用")
+        self.create_tooltip(network_cb, t("ui.bypass.network_desc"))
 
-        network_desc = ttk.Label(network_frame, text="浏览器指纹、网络缓存\n⚠️ 高级选项",
+        network_desc = ttk.Label(network_frame, text=t("ui.bypass.network_desc"),
                                 font=("Arial", 8), foreground="orange")
         network_desc.pack(anchor=tk.W, pady=(2, 0))
 
-        # 高级选项框架
-        advanced_frame = ttk.LabelFrame(main_frame, text="⚙️ 高级选项", padding="10")
+        # Khung tùy chọn nâng cao
+        advanced_frame = ttk.LabelFrame(main_frame, text=t("ui.advanced.title"), padding="10")
         advanced_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
 
-        # 备份选项
-        self.create_backups = tk.BooleanVar(value=True)  # 默认创建备份
-        backup_cb = ttk.Checkbutton(advanced_frame, text="💾 创建备份",
+        # Tùy chọn backup
+        self.create_backups = tk.BooleanVar(value=True)  # Mặc định tạo backup
+        backup_cb = ttk.Checkbutton(advanced_frame, text=t("ui.advanced.backup"),
                                    variable=self.create_backups)
         backup_cb.pack(anchor=tk.W)
-        self.create_tooltip(backup_cb, "操作前自动备份原始文件:\n• 可用于恢复到修改前状态\n• 建议保持开启以防误操作\n• 备份文件存储在程序目录下")
+        self.create_tooltip(backup_cb, t("ui.advanced.backup_desc"))
 
-        backup_desc = ttk.Label(advanced_frame, text="自动备份原始文件，支持一键恢复",
+        backup_desc = ttk.Label(advanced_frame, text=t("ui.advanced.backup_desc"),
                                font=("Arial", 8), foreground="gray")
         backup_desc.pack(anchor=tk.W, pady=(2, 0))
 
-        # 说明文字
+        # Văn bản mô tả
         info_frame = ttk.Frame(main_frame)
         info_frame.grid(row=4, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
 
         info_label = ttk.Label(info_frame,
-                              text="💡 自动执行：修改设备ID → 清理数据库/工作区 → 锁定文件 → 清理缓存",
+                              text=t("ui.advanced.auto_desc"),
                               font=("Arial", 9), foreground="blue")
         info_label.pack(anchor=tk.W)
         
-        # 按钮框架
+        # Khung nút
         button_frame = ttk.Frame(main_frame)
         button_frame.grid(row=5, column=0, columnspan=2, pady=(0, 10))
         
-        # 主要按钮
-        self.start_btn = ttk.Button(button_frame, text="🚀 开始清理", 
+        # Nút chính
+        self.start_btn = ttk.Button(button_frame, text=t("ui.buttons.start_cleaning"), 
                                    command=self.start_cleaning, style="Accent.TButton")
         self.start_btn.pack(side=tk.LEFT, padx=(0, 10))
         
-        ttk.Button(button_frame, text="📊 查看信息", 
+        ttk.Button(button_frame, text=t("ui.buttons.view_info"), 
                   command=self.show_info).pack(side=tk.LEFT, padx=(0, 10))
         
-        ttk.Button(button_frame, text="🔍 当前ID", 
+        ttk.Button(button_frame, text=t("ui.buttons.current_ids"), 
                   command=self.show_current_ids).pack(side=tk.LEFT, padx=(0, 10))
         
-        ttk.Button(button_frame, text="📁 打开备份目录",
+        ttk.Button(button_frame, text=t("ui.buttons.open_backup"),
                   command=self.open_backup_dir).pack(side=tk.LEFT, padx=(0, 10))
 
-        ttk.Button(button_frame, text="🔄 恢复备份",
+        ttk.Button(button_frame, text=t("ui.buttons.restore_backup"),
                   command=self.restore_backup).pack(side=tk.LEFT, padx=(0, 10))
         
-        # 日志框架
-        log_frame = ttk.LabelFrame(main_frame, text="操作日志", padding="10")
+        # Khung log
+        log_frame = ttk.LabelFrame(main_frame, text=t("ui.log.title"), padding="10")
         log_frame.grid(row=6, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S))
         log_frame.columnconfigure(0, weight=1)
         log_frame.rowconfigure(0, weight=1)
@@ -447,8 +453,8 @@ class AugmentCleanerGUI:
         self.log_text = scrolledtext.ScrolledText(log_frame, height=15, width=80)
         self.log_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
-        # 清除日志按钮
-        ttk.Button(log_frame, text="清除日志",
+        # Nút xóa log
+        ttk.Button(log_frame, text=t("ui.buttons.clear_log"),
                   command=self.clear_log).grid(row=1, column=0, sticky=tk.E, pady=(5, 0))
 
         # 进度条
@@ -456,35 +462,35 @@ class AugmentCleanerGUI:
         self.progress.grid(row=7, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(10, 0))
         
     def initialize_components(self):
-        """初始化组件"""
+        """Khởi tạo các component"""
         try:
-            self.log("正在初始化组件...")
+            self.log(t("messages.init.starting"))
             self.path_manager = PathManager()
             self.backup_manager = BackupManager()
             self.jetbrains_handler = JetBrainsHandler(self.path_manager, self.backup_manager)
             self.vscode_handler = VSCodeHandler(self.path_manager, self.backup_manager)
             self.database_cleaner = DatabaseCleaner(self.path_manager, self.backup_manager)
-            self.log("✅ 组件初始化完成")
-            # 延迟更新状态显示，避免启动时卡顿
+            self.log(t("messages.init.success"))
+            # Trì hoãn cập nhật hiển thị trạng thái, tránh lag khi khởi động
             self.root.after(3000, self.update_status_display)
         except Exception as e:
-            self.log(f"❌ 组件初始化失败: {e}")
-            messagebox.showerror("错误", f"初始化失败: {e}")
+            self.log(t("messages.init.failed", error=str(e)))
+            messagebox.showerror(t("messages.init.error_title"), t("messages.init.failed", error=str(e)))
     
     def log(self, message, level="INFO"):
-        """添加日志"""
+        """Thêm log"""
         timestamp = time.strftime("%H:%M:%S")
 
-        # 根据消息内容自动判断级别
-        if "❌" in message or "错误" in message or "失败" in message:
+        # Tự động xác định mức độ dựa trên nội dung tin nhắn
+        if "❌" in message or "lỗi" in message.lower() or "thất bại" in message.lower():
             level = "ERROR"
-        elif "⚠️" in message or "警告" in message:
+        elif "⚠️" in message or "cảnh báo" in message.lower():
             level = "WARNING"
-        elif "✅" in message or "成功" in message or "完成" in message:
+        elif "✅" in message or "thành công" in message.lower() or "hoàn tất" in message.lower():
             level = "SUCCESS"
-        elif "🔍" in message or "检测" in message:
+        elif "🔍" in message or "kiểm tra" in message.lower() or "phát hiện" in message.lower():
             level = "DETECT"
-        elif "🚀" in message or "开始" in message:
+        elif "🚀" in message or "bắt đầu" in message.lower():
             level = "START"
 
         # 格式化日志消息
@@ -501,29 +507,29 @@ class AugmentCleanerGUI:
         else:
             log_message = f"[{timestamp}] ℹ️ {message}\n"
 
-        # 安全检查：确保log_text已经创建
+        # Kiểm tra an toàn: Đảm bảo log_text đã được tạo
         if hasattr(self, 'log_text') and self.log_text:
             try:
                 self.log_text.insert(tk.END, log_message)
                 self.log_text.see(tk.END)
                 self.root.update_idletasks()
             except Exception:
-                # 如果GUI操作失败，至少输出到控制台
+                # Nếu thao tác GUI thất bại, ít nhất xuất ra console
                 print(f"LOG: {log_message.strip()}")
         else:
-            # 如果log_text还没创建，输出到控制台
+            # Nếu log_text chưa được tạo, xuất ra console
             print(f"LOG: {log_message.strip()}")
 
-        # 如果是错误，同时输出到控制台
+        # Nếu là lỗi, đồng thời xuất ra console
         if level == "ERROR":
             print(f"ERROR: {message}")
     
     def clear_log(self):
-        """清除日志"""
+        """Xóa log"""
         self.log_text.delete(1.0, tk.END)
 
     def create_tooltip(self, widget, text):
-        """创建工具提示"""
+        """Tạo tooltip"""
         ToolTip(widget, text)
 
     def _check_device_id_status(self):
@@ -571,26 +577,27 @@ class AugmentCleanerGUI:
                         elif 'webstorm' in item.name.lower():
                             software_list.append('WebStorm')
 
-            # 构建状态
+            # Xây dựng trạng thái
             if device_count == 0:
                 return {
-                    'display': "🆔 设备ID限制: ❌ 未检测到",
-                    'tooltip': "未检测到支持的IDE安装",
-                    'log': "未检测到设备ID文件"
+                    'display': t("messages.status.device_id_not_detected"),
+                    'tooltip': t("messages.status.device_id_not_detected_tooltip"),
+                    'log': t("messages.status.device_id_not_detected_log")
                 }
 
-            status = "⚠️ 未锁定"  # 简化状态
+            status = t("messages.status.device_id_unlocked")  # Trạng thái đơn giản
+            software_str = ', '.join(set(software_list))
             return {
-                'display': f"🆔 设备ID限制: {status} ({device_count}个ID)",
-                'tooltip': f"设备ID反制状态:\n• 检测到 {device_count} 个设备ID文件\n• 涉及软件: {', '.join(set(software_list))}",
-                'log': f"检测到 {device_count} 个设备ID"
+                'display': t("messages.status.device_id_display", status=status, count=device_count),
+                'tooltip': t("messages.status.device_id_tooltip", count=device_count, software=software_str),
+                'log': t("messages.status.device_id_log", count=device_count)
             }
 
         except Exception as e:
             return {
-                'display': "🆔 设备ID限制: ❌ 检测失败",
-                'tooltip': f"检测失败: {e}",
-                'log': f"设备ID检测失败: {e}"
+                'display': t("messages.status.device_id_check_failed"),
+                'tooltip': t("messages.status.device_id_check_failed_tooltip", error=str(e)),
+                'log': t("messages.status.device_id_check_failed_log", error=str(e))
             }
 
     def _check_database_status(self):
@@ -628,23 +635,23 @@ class AugmentCleanerGUI:
 
             if not db_files:
                 return {
-                    'display': "🗃️ 数据库文件: ❌ 未检测到",
-                    'tooltip': "未检测到IDE数据库文件",
-                    'log': "未检测到数据库文件"
+                    'display': t("messages.status.database_not_detected"),
+                    'tooltip': t("messages.status.database_not_detected_tooltip"),
+                    'log': t("messages.status.database_not_detected_log")
                 }
 
-            status_text = f"⚠️ {total_augment_records}条记录" if total_augment_records > 0 else "✅ 已清理"
+            status_text = t("messages.status.database_records", count=total_augment_records) if total_augment_records > 0 else t("messages.status.database_cleaned")
             return {
-                'display': f"🗃️ 数据库文件: {status_text}",
-                'tooltip': f"检测到 {len(db_files)} 个数据库文件\n{total_augment_records} 条AugmentCode记录",
-                'log': f"检测到 {len(db_files)} 个数据库文件，{total_augment_records} 条AugmentCode记录"
+                'display': t("messages.status.database_display", status=status_text),
+                'tooltip': t("messages.status.database_tooltip", db_count=len(db_files), record_count=total_augment_records),
+                'log': t("messages.status.database_log", db_count=len(db_files), record_count=total_augment_records)
             }
 
         except Exception as e:
             return {
-                'display': "🗃️ 数据库文件: ❌ 检测失败",
-                'tooltip': f"检测失败: {e}",
-                'log': f"数据库检测失败: {e}"
+                'display': t("messages.status.database_check_failed"),
+                'tooltip': t("messages.status.database_check_failed_tooltip", error=str(e)),
+                'log': t("messages.status.database_check_failed_log", error=str(e))
             }
 
     def _check_workspace_status(self):
@@ -674,22 +681,22 @@ class AugmentCleanerGUI:
 
             if not workspace_dirs:
                 return {
-                    'display': "📁 工作区目录: ❌ 未检测到",
-                    'tooltip': "未检测到工作区存储目录",
-                    'log': "未检测到工作区目录"
+                    'display': t("messages.status.workspace_not_detected"),
+                    'tooltip': t("messages.status.workspace_not_detected_tooltip"),
+                    'log': t("messages.status.workspace_not_detected_log")
                 }
 
             return {
-                'display': f"📁 工作区目录: ⚠️ {len(workspace_dirs)}个待清理",
-                'tooltip': f"检测到 {len(workspace_dirs)} 个工作区目录\n包含 {total_projects} 个项目记录",
-                'log': f"检测到 {len(workspace_dirs)} 个工作区目录"
+                'display': t("messages.status.workspace_display", count=len(workspace_dirs)),
+                'tooltip': t("messages.status.workspace_tooltip", dir_count=len(workspace_dirs), project_count=total_projects),
+                'log': t("messages.status.workspace_log", dir_count=len(workspace_dirs))
             }
 
         except Exception as e:
             return {
-                'display': "📁 工作区目录: ❌ 检测失败",
-                'tooltip': f"检测失败: {e}",
-                'log': f"工作区检测失败: {e}"
+                'display': t("messages.status.workspace_check_failed"),
+                'tooltip': t("messages.status.workspace_check_failed_tooltip", error=str(e)),
+                'log': t("messages.status.workspace_check_failed_log", error=str(e))
             }
 
     def _check_network_status(self):
@@ -729,34 +736,34 @@ class AugmentCleanerGUI:
 
                         browser_caches.append(cache_path)
                         status_icon = "⚠️" if cache_files > 100 else "✅"
-                        cache_details.append(f"• {browser_name}: {status_icon} {cache_files}个缓存文件")
+                        cache_details.append(t("messages.status.browser_cache_files", browser=browser_name, icon=status_icon, count=cache_files))
                     except Exception:
-                        cache_details.append(f"• {browser_name}: 无法访问")
+                        cache_details.append(t("messages.status.browser_inaccessible", browser=browser_name))
 
             if not browser_caches:
                 return {
-                    'display': "🌐 浏览器缓存: ❌ 未检测到",
-                    'tooltip': "未检测到浏览器安装",
-                    'log': "未检测到浏览器缓存"
+                    'display': t("messages.status.network_not_detected"),
+                    'tooltip': t("messages.status.network_not_detected_tooltip"),
+                    'log': t("messages.status.network_not_detected_log")
                 }
 
-            # 构建详细的tooltip信息
-            tooltip_text = f"浏览器缓存状态:\n" + "\n".join(cache_details[:5])
+            # Xây dựng thông tin tooltip chi tiết
+            tooltip_text = t("messages.status.browser_cache_status") + "\n" + "\n".join(cache_details[:5])
             if len(cache_details) > 5:
-                tooltip_text += f"\n... 还有 {len(cache_details) - 5} 个浏览器"
-            tooltip_text += f"\n\n将清理内容:\n• 浏览器缓存和Cookie\n• Canvas/WebGL指纹\n• 网络会话数据\n⚠️ 可能影响其他网站登录状态"
+                tooltip_text += "\n" + t("messages.status.more_browsers", count=len(cache_details) - 5)
+            tooltip_text += "\n\n" + t("messages.status.will_clean") + "\n" + t("messages.status.will_clean_items")
 
             return {
-                'display': f"🌐 浏览器缓存: ⚠️ {len(browser_caches)}个浏览器",
+                'display': t("messages.status.network_display", count=len(browser_caches)),
                 'tooltip': tooltip_text,
-                'log': f"检测到 {len(browser_caches)} 个浏览器缓存"
+                'log': t("messages.status.network_log", count=len(browser_caches))
             }
 
         except Exception as e:
             return {
-                'display': "🌐 浏览器缓存: ❌ 检测失败",
-                'tooltip': f"检测失败: {e}",
-                'log': f"网络指纹检测失败: {e}"
+                'display': t("messages.status.network_check_failed"),
+                'tooltip': t("messages.status.network_check_failed_tooltip", error=str(e)),
+                'log': t("messages.status.network_check_failed_log", error=str(e))
             }
     
     def refresh_status(self):
@@ -783,55 +790,55 @@ class AugmentCleanerGUI:
                     # 这部分逻辑已移动到新的状态检测方法中
                     pass
 
-                # 这部分逻辑已移动到新的状态检测方法中
-                self.log("✅ AugmentCode限制反制状态检测完成")
+                # Logic này đã được chuyển sang phương thức kiểm tra trạng thái mới
+                self.log(t("messages.status.update_complete"))
             except Exception as e:
-                self.log(f"❌ 状态刷新失败: {e}")
+                self.log(t("messages.status.update_failed", error=str(e)))
                 import traceback
                 self.log(f"   详细错误: {traceback.format_exc()}")
 
         threading.Thread(target=update_status, daemon=True).start()
 
     def update_status_display(self):
-        """更新状态显示"""
+        """Cập nhật hiển thị trạng thái"""
         try:
-            # 检测设备ID状态
+            # Kiểm tra trạng thái Device ID
             device_id_result = self._check_device_id_status()
             self.device_id_status.config(text=device_id_result['display'])
             self.create_tooltip(self.device_id_status, device_id_result['tooltip'])
 
-            # 检测数据库记录状态
+            # Kiểm tra trạng thái bản ghi database
             database_result = self._check_database_status()
             self.database_status.config(text=database_result['display'])
             self.create_tooltip(self.database_status, database_result['tooltip'])
 
-            # 检测工作区记录状态
+            # Kiểm tra trạng thái bản ghi workspace
             workspace_result = self._check_workspace_status()
             self.workspace_status.config(text=workspace_result['display'])
             self.create_tooltip(self.workspace_status, workspace_result['tooltip'])
 
-            # 检测网络指纹状态
+            # Kiểm tra trạng thái dấu vết mạng
             network_result = self._check_network_status()
             self.network_status.config(text=network_result['display'])
             self.create_tooltip(self.network_status, network_result['tooltip'])
         except Exception as e:
-            self.log(f"❌ 状态显示更新失败: {e}")
+            self.log(t("messages.status.display_update_failed", error=str(e)))
 
     def start_cleaning(self):
-        """开始清理 - 一键完成所有操作"""
-        if not messagebox.askyesno("确认", "确定要开始一键清理吗？\n\n将自动执行：\n• 关闭所有IDE进程\n• 清理AugmentCode数据库\n• 清理.augmentcode目录\n• 执行安全模式清理"):
+        """Bắt đầu dọn dẹp - Hoàn tất tất cả thao tác một lần"""
+        if not messagebox.askyesno(t("messages.cleaning.confirm_title"), t("messages.cleaning.confirm_message")):
             return
 
-        self.start_btn.config(state='disabled', text="一键清理中...")
+        self.start_btn.config(state='disabled', text=t("ui.buttons.start_cleaning_progress"))
         self.progress.start()
 
         def cleaning_thread():
             try:
-                self.log("🎯 检测系统中的IDE...")
-                self.log("› 🎯 目标IDE: VS Code, Cursor, PyCharm, IntelliJ IDEA, WebStorm, Rider")
+                self.log(t("messages.cleaning.detecting_ides"))
+                self.log(t("messages.cleaning.target_ides"))
 
-                # 第一步：关闭IDE进程
-                self.log("› 🔄 正在关闭选定的IDE进程...")
+                # Bước 1: Đóng các tiến trình IDE
+                self.log(t("messages.cleaning.closing_processes"))
                 self._close_ide_processes()
 
                 # 第二步：执行安全模式清理
@@ -839,24 +846,24 @@ class AugmentCleanerGUI:
                 self.log("› � 执行安全模式清理...")
                 overall_success = self._execute_safe_mode_cleaning()
 
-                # 第三步：清理.augmentcode目录
-                self.log("› 🗑️ 正在清理.augmentcode目录...")
+                # Bước 3: Dọn dẹp thư mục .augmentcode
+                self.log(t("messages.cleaning.cleaning_directory"))
                 self._clean_augmentcode_directory()
 
                 if overall_success:
-                    self.log("› ✅ 安全模式清理完成")
-                    self.log("› ✅ 登录数据清理完成")
-                    self.log("› 🎉 一键清理完成！所有Augment数据已清除")
+                    self.log(t("messages.cleaning.safe_mode_complete"))
+                    self.log(t("messages.cleaning.login_data_cleaned"))
+                    self.log(t("messages.cleaning.all_complete"))
                 else:
-                    self.log("› ⚠️ 部分清理操作失败，请查看详细日志")
+                    self.log(t("messages.cleaning.partial_failed"))
 
                 # 如果用户还选择了其他反制选项，继续执行
                 additional_operations = False
 
-                # 设备ID限制反制
+                # Phản công giới hạn Device ID
                 if self.bypass_device_id.get():
-                    self.log("🆔 执行设备ID限制反制...")
-                    self.log("   📋 自动执行：创建备份 → 修改设备ID → 锁定文件")
+                    self.log(t("messages.cleaning.device_id_bypass"))
+                    self.log(t("messages.cleaning.device_id_auto"))
 
                     # 处理JetBrains设备ID
                     jetbrains_info = self.jetbrains_handler.verify_jetbrains_installation()
@@ -868,7 +875,7 @@ class AugmentCleanerGUI:
                             jetbrains_software.add(software_name)
 
                         software_list_str = ", ".join(sorted(jetbrains_software))
-                        self.log(f"   🔍 检测到软件: {software_list_str}")
+                        self.log(t("messages.cleaning.detected_software", software=software_list_str))
 
                         result = self.jetbrains_handler.process_jetbrains_ides(
                             create_backups=self.create_backups.get(),  # 使用用户选择
@@ -882,27 +889,27 @@ class AugmentCleanerGUI:
                             db_count = len(databases_processed) if isinstance(databases_processed, list) else databases_processed
                             db_records = result.get('database_records_cleaned', 0)
 
-                            self.log(f"✅ {software_list_str} 反制成功")
-                            self.log(f"   📄 处理了 {files_count} 个ID文件，{db_count} 个数据库文件")
+                            self.log(t("messages.cleaning.jetbrains_success", software=software_list_str))
+                            self.log(t("messages.cleaning.jetbrains_files", files=files_count, databases=db_count))
                             if db_records > 0:
-                                self.log(f"   🗃️ 清理了 {db_records} 条数据库记录")
+                                self.log(t("messages.cleaning.jetbrains_records", records=db_records))
 
-                            # 显示具体的文件
+                            # Hiển thị các file cụ thể
                             for file_path in result['files_processed']:
                                 file_name = Path(file_path).name
                                 software_name = self._get_jetbrains_software_name(file_name, jetbrains_info)
-                                self.log(f"   📄 ID文件: {software_name} - {file_name}")
+                                self.log(t("messages.cleaning.jetbrains_id_file", software=software_name, file=file_name))
 
-                            # 显示数据库文件
+                            # Hiển thị file database
                             for db_path in result.get('databases_processed', []):
                                 db_name = Path(db_path).name
-                                self.log(f"   🗃️ 数据库: {db_name}")
+                                self.log(t("messages.cleaning.jetbrains_database", db=db_name))
 
                             overall_success = True
                         else:
-                            self.log(f"❌ {software_list_str} 反制失败: {'; '.join(result['errors'])}")
+                            self.log(t("messages.cleaning.jetbrains_failed", software=software_list_str, errors='; '.join(result['errors'])))
                     else:
-                        self.log("   ℹ️ 未检测到IDEA/PyCharm等JetBrains软件安装")
+                        self.log(t("messages.cleaning.jetbrains_not_found"))
 
                     # 处理VSCode/Cursor设备ID
                     vscode_info = self.vscode_handler.verify_vscode_installation()
@@ -915,38 +922,38 @@ class AugmentCleanerGUI:
                         )
                         if result['success']:
                             directories_count = result.get('directories_processed', 0)
-                            self.log(f"✅ VSCode/Cursor 设备ID处理成功，修改了 {directories_count} 个目录")
-                            # 显示修改的文件详情
+                            self.log(t("messages.cleaning.vscode_success", directories=directories_count))
+                            # Hiển thị chi tiết file đã sửa
                             if result.get('files_processed'):
-                                self.log(f"   📄 修改了 {len(result['files_processed'])} 个文件:")
+                                self.log(t("messages.cleaning.vscode_files", count=len(result['files_processed'])))
                                 for file_path in result['files_processed']:
                                     file_name = Path(file_path).name
-                                    self.log(f"      • {file_name}")
-                            # 显示ID变更详情
+                                    self.log(t("messages.cleaning.vscode_file_item", file=file_name))
+                            # Hiển thị chi tiết thay đổi ID
                             if result.get('new_ids'):
                                 new_ids_count = len(result['new_ids']) if isinstance(result['new_ids'], (list, dict)) else result['new_ids']
-                                self.log(f"   🆔 生成了 {new_ids_count} 个新ID")
+                                self.log(t("messages.cleaning.vscode_new_ids", count=new_ids_count))
                             overall_success = True
                         else:
-                            self.log(f"❌ VSCode/Cursor 设备ID处理失败: {'; '.join(result['errors'])}")
+                            self.log(t("messages.cleaning.vscode_failed", errors='; '.join(result['errors'])))
 
-                # 数据库记录限制反制
+                # Phản công bản ghi database
                 if self.bypass_database.get():
-                    self.log("🗃️ 执行数据库记录限制反制...")
-                    self.log("   📋 自动执行：清理全局存储数据库 → 精确清理工作区AugmentCode数据 → 创建安全备份")
-                    self.log("   💡 注意：使用精确清理模式，只清理AugmentCode相关数据，保留其他项目配置")
-                    self.log("   ⚠️ 备份说明：备份仅用于误操作恢复，恢复后AugmentCode限制会重新生效")
+                    self.log(t("messages.cleaning.database_bypass"))
+                    self.log(t("messages.cleaning.database_auto"))
+                    self.log(t("messages.cleaning.database_note"))
+                    self.log(t("messages.cleaning.database_backup_note"))
 
                     try:
                         global_db_cleaned = 0
                         workspace_cleaned = 0
 
                         if not vscode_info.get('installed'):
-                            self.log("   ℹ️ 未检测到VSCode/Cursor安装")
+                            self.log(t("messages.cleaning.vscode_not_found"))
                         else:
-                            # 处理每个变体
+                            # Xử lý từng biến thể
                             for variant_name in vscode_info.get('variants_found', []):
-                                self.log(f"   🔍 处理 {variant_name}...")
+                                self.log(t("messages.cleaning.processing_variant", variant=variant_name))
 
                                 # 查找该变体的配置目录
                                 for storage_dir in vscode_info.get('storage_directories', []):
@@ -967,11 +974,11 @@ class AugmentCleanerGUI:
                                                 backup_path = f"{state_db_path}.backup.{int(time.time())}"
                                                 import shutil
                                                 shutil.copy2(state_db_path, backup_path)
-                                                self.log(f"      💾 已备份数据库: {backup_path}")
+                                                self.log(t("messages.cleaning.database_backed_up", path=backup_path))
                                             else:
-                                                self.log(f"      ⚠️ 跳过备份（用户选择）")
+                                                self.log(t("messages.cleaning.backup_skipped"))
 
-                                            # 清理AugmentCode记录
+                                            # Dọn dẹp bản ghi AugmentCode
                                             import sqlite3
                                             conn = sqlite3.connect(state_db_path)
                                             cursor = conn.cursor()
@@ -982,28 +989,28 @@ class AugmentCleanerGUI:
                                                 cursor.execute("DELETE FROM ItemTable WHERE key LIKE '%augment%'")
                                                 conn.commit()
                                                 global_db_cleaned += count
-                                                self.log(f"      📄 清理了 {count} 条AugmentCode记录")
+                                                self.log(t("messages.cleaning.records_cleaned", count=count))
 
                                             conn.close()
                                         except Exception as e:
-                                            self.log(f"      ❌ 数据库清理失败: {e}")
+                                            self.log(t("messages.cleaning.database_clean_failed", error=str(e)))
 
                         if global_db_cleaned > 0:
-                            self.log(f"✅ 数据库记录反制成功")
-                            self.log(f"   📄 清理了 {global_db_cleaned} 条数据库记录")
+                            self.log(t("messages.cleaning.database_success"))
+                            self.log(t("messages.cleaning.database_records_cleaned", count=global_db_cleaned))
                             overall_success = True
                         else:
-                            self.log(f"ℹ️ 未发现需要清理的AugmentCode数据库记录")
+                            self.log(t("messages.cleaning.no_records_found"))
 
                     except Exception as e:
-                        self.log(f"❌ 数据库记录反制异常: {e}")
+                        self.log(t("messages.cleaning.database_exception", error=str(e)))
                         import traceback
-                        self.log(f"   详细错误: {traceback.format_exc()}")
+                        self.log(t("messages.cleaning.detailed_error", error=traceback.format_exc()))
 
-                # 工作区记录限制反制
+                # Phản công bản ghi workspace
                 if self.bypass_workspace.get():
-                    self.log("📁 执行工作区记录限制反制...")
-                    self.log("   📋 自动执行：精确清理工作区AugmentCode数据 → 创建安全备份")
+                    self.log(t("messages.cleaning.workspace_bypass"))
+                    self.log(t("messages.cleaning.workspace_auto"))
 
                     try:
                         workspace_cleaned = 0
@@ -1011,7 +1018,7 @@ class AugmentCleanerGUI:
 
                         if vscode_info['installed']:
                             for variant_name in vscode_info.get('variants_found', []):
-                                self.log(f"   🔍 处理 {variant_name} 工作区...")
+                                self.log(t("messages.cleaning.processing_workspace", variant=variant_name))
 
                                 # 查找该变体的配置目录
                                 for storage_dir in vscode_info.get('storage_directories', []):
@@ -1051,17 +1058,17 @@ class AugmentCleanerGUI:
                                                             cursor.execute("DELETE FROM ItemTable WHERE key LIKE '%augment%'")
                                                             conn.commit()
                                                             workspace_projects_cleaned += 1
-                                                            self.log(f"         📄 项目 {project_dir.name[:8]}... 清理了 {count} 条记录")
+                                                            self.log(t("messages.cleaning.project_cleaned", project=project_dir.name[:8], count=count))
 
                                                         conn.close()
                                                     except Exception as e:
-                                                        self.log(f"         ❌ 项目 {project_dir.name[:8]}... 清理失败: {e}")
+                                                        self.log(t("messages.cleaning.project_failed", project=project_dir.name[:8], error=str(e)))
 
                                             if workspace_projects_cleaned > 0:
                                                 workspace_cleaned += workspace_projects_cleaned
-                                                self.log(f"      📁 精确清理了 {workspace_projects_cleaned} 个项目的AugmentCode数据")
+                                                self.log(t("messages.cleaning.workspace_projects_cleaned", count=workspace_projects_cleaned))
                                             else:
-                                                self.log(f"      ℹ️ 工作区中未发现AugmentCode数据")
+                                                self.log(t("messages.cleaning.workspace_no_data"))
 
                                         except Exception as e:
                                             self.log(f"      ❌ 工作区清理失败: {e}")
@@ -1078,39 +1085,39 @@ class AugmentCleanerGUI:
                         import traceback
                         self.log(f"   详细错误: {traceback.format_exc()}")
 
-                # 网络指纹限制反制
+                # Phản công dấu vết mạng
                 if self.bypass_network.get():
-                    self.log("🌐 执行网络指纹限制反制...")
-                    self.log("   ⚠️ 这是高级功能，可能影响其他应用")
-                    self.log("   📋 自动执行：清理浏览器OAuth缓存 → 重置网络指纹")
+                    self.log(t("messages.cleaning.network_bypass"))
+                    self.log(t("messages.cleaning.network_advanced"))
+                    self.log(t("messages.cleaning.network_auto"))
 
-                    # 清理浏览器OAuth缓存
+                    # Dọn cache OAuth trình duyệt
                     self._clean_browser_oauth_cache()
 
-                    self.log("   ✅ 网络指纹反制完成")
+                    self.log(t("messages.cleaning.network_complete"))
                 
-                # 完成
+                # Hoàn tất
                 if overall_success:
-                    self.log("🎉 清理完成！请重启IDE并使用新账户登录")
-                    messagebox.showinfo("成功", "清理完成！\n\n请重启您的IDE并使用新的AugmentCode账户登录。")
+                    self.log(t("messages.cleaning.all_complete_final"))
+                    messagebox.showinfo(t("messages.cleaning.success_title"), t("messages.cleaning.success_message"))
                 else:
-                    self.log("❌ 清理失败，请检查错误信息")
-                    messagebox.showerror("失败", "清理过程中出现错误，请查看日志了解详情。")
+                    self.log(t("messages.cleaning.cleaning_failed"))
+                    messagebox.showerror(t("messages.cleaning.failed_title"), t("messages.cleaning.failed_message"))
                 
             except Exception as e:
-                self.log(f"❌ 清理过程出现异常: {e}")
-                messagebox.showerror("错误", f"清理过程出现异常: {e}")
+                self.log(t("messages.cleaning.cleaning_exception", error=str(e)))
+                messagebox.showerror(t("messages.cleaning.error_title"), t("messages.cleaning.cleaning_exception_msg", error=str(e)))
             finally:
                 self.progress.stop()
-                self.start_btn.config(state='normal', text="🚀 开始清理")
+                self.start_btn.config(state='normal', text=t("ui.buttons.start_cleaning"))
                 self.refresh_status()
         
         threading.Thread(target=cleaning_thread, daemon=True).start()
     
     def show_info(self):
-        """显示详细信息"""
+        """Hiển thị thông tin chi tiết"""
         info_window = tk.Toplevel(self.root)
-        info_window.title("系统详细信息")
+        info_window.title(t("view_info.window_title"))
         info_window.geometry("900x700")
         info_window.transient(self.root)
 
@@ -1118,37 +1125,37 @@ class AugmentCleanerGUI:
         notebook = ttk.Notebook(info_window)
         notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # 系统概览页面
+        # Trang tổng quan hệ thống
         overview_frame = ttk.Frame(notebook)
-        notebook.add(overview_frame, text="📊 系统概览")
+        notebook.add(overview_frame, text=t("view_info.overview_tab"))
 
         overview_text = scrolledtext.ScrolledText(overview_frame, wrap=tk.WORD, font=("Consolas", 9))
         overview_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # 设备ID反制详情页面
+        # Trang chi tiết phản công Device ID
         device_id_frame = ttk.Frame(notebook)
-        notebook.add(device_id_frame, text="🆔 设备ID反制")
+        notebook.add(device_id_frame, text=t("view_info.device_id_tab"))
 
         device_id_text = scrolledtext.ScrolledText(device_id_frame, wrap=tk.WORD, font=("Consolas", 9))
         device_id_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # 数据库记录反制详情页面
         database_frame = ttk.Frame(notebook)
-        notebook.add(database_frame, text="�️ 数据库记录反制")
+        notebook.add(database_frame, text=t("view_info.database_tab"))
 
         database_text = scrolledtext.ScrolledText(database_frame, wrap=tk.WORD, font=("Consolas", 9))
         database_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # 工作区记录反制详情页面
         workspace_frame = ttk.Frame(notebook)
-        notebook.add(workspace_frame, text="� 工作区记录反制")
+        notebook.add(workspace_frame, text=t("view_info.workspace_tab"))
 
         workspace_text = scrolledtext.ScrolledText(workspace_frame, wrap=tk.WORD, font=("Consolas", 9))
         workspace_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # 网络指纹反制详情页面
+        # Trang chi tiết phản công dấu vết mạng
         network_frame = ttk.Frame(notebook)
-        notebook.add(network_frame, text="🌐 网络指纹反制")
+        notebook.add(network_frame, text=t("view_info.network_tab"))
 
         network_text = scrolledtext.ScrolledText(network_frame, wrap=tk.WORD, font=("Consolas", 9))
         network_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
@@ -1159,20 +1166,20 @@ class AugmentCleanerGUI:
                 from datetime import datetime
 
                 # 系统概览
-                overview_text.insert(tk.END, f"�️ {APP_NAME} v{VERSION} - 系统概览\n")
+                overview_text.insert(tk.END, t("view_info.overview_header", app=APP_NAME, version=VERSION) + "\n")
                 overview_text.insert(tk.END, "=" * 70 + "\n\n")
-                overview_text.insert(tk.END, f"🕒 检测时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                overview_text.insert(tk.END, f"💻 操作系统: {platform.system()} {platform.release()}\n")
-                overview_text.insert(tk.END, f"🏗️ 架构: {platform.machine()}\n")
-                overview_text.insert(tk.END, f"👤 用户名: {os.getenv('USERNAME', 'Unknown')}\n")
-                overview_text.insert(tk.END, f"📁 用户目录: {Path.home()}\n\n")
+                overview_text.insert(tk.END, t("view_info.detection_time", time=datetime.now().strftime('%Y-%m-%d %H:%M:%S')) + "\n")
+                overview_text.insert(tk.END, t("view_info.os", os=platform.system(), release=platform.release()) + "\n")
+                overview_text.insert(tk.END, t("view_info.architecture", arch=platform.machine()) + "\n")
+                overview_text.insert(tk.END, t("view_info.username", user=os.getenv('USERNAME', 'Unknown')) + "\n")
+                overview_text.insert(tk.END, t("view_info.home_dir", path=Path.home()) + "\n\n")
 
                 # 快速状态总结
                 jetbrains_info = self.jetbrains_handler.verify_jetbrains_installation()
                 vscode_info = self.vscode_handler.verify_vscode_installation()
                 db_info = self.database_cleaner.get_database_info()
 
-                overview_text.insert(tk.END, "� 快速状态总结:\n")
+                overview_text.insert(tk.END, t("view_info.quick_status") + "\n")
                 # 显示具体的JetBrains软件
                 if jetbrains_info['installed']:
                     jetbrains_software = set()
@@ -1180,26 +1187,26 @@ class AugmentCleanerGUI:
                         software_name = self._get_jetbrains_software_name(Path(file_path).name, jetbrains_info)
                         jetbrains_software.add(software_name)
                     software_list_str = ", ".join(sorted(jetbrains_software))
-                    overview_text.insert(tk.END, f"   🔧 JetBrains: ✅ 已安装 ({software_list_str})\n")
+                    overview_text.insert(tk.END, t("view_info.jetbrains_installed", software=software_list_str) + "\n")
                 else:
-                    overview_text.insert(tk.END, f"   🔧 JetBrains: ❌ 未安装\n")
+                    overview_text.insert(tk.END, t("view_info.jetbrains_not_installed") + "\n")
                 # 显示友好的VSCode变体名称
                 if vscode_info['installed'] and vscode_info['variants_found']:
                     friendly_variants = [self._get_friendly_vscode_name(v) for v in vscode_info['variants_found']]
                     variants_str = ", ".join(friendly_variants)
-                    overview_text.insert(tk.END, f"   📝 VSCode/Cursor: ✅ 已安装 ({variants_str})\n")
+                    overview_text.insert(tk.END, t("view_info.vscode_installed", variants=variants_str) + "\n")
                 else:
-                    overview_text.insert(tk.END, f"   📝 VSCode/Cursor: ❌ 未安装\n")
-                overview_text.insert(tk.END, f"   🗃️ 数据库: {db_info['accessible_databases']}/{db_info['total_databases']} 可访问\n\n")
+                    overview_text.insert(tk.END, t("view_info.vscode_not_installed") + "\n")
+                overview_text.insert(tk.END, t("view_info.databases_accessible", accessible=db_info['accessible_databases'], total=db_info['total_databases']) + "\n\n")
 
                 # 备份信息
                 backup_dir = self.backup_manager.backup_dir
                 if backup_dir.exists():
                     backup_count = len([f for f in backup_dir.iterdir() if f.is_dir()])
-                    overview_text.insert(tk.END, f"� 备份状态: ✅ 已创建 {backup_count} 个备份\n")
-                    overview_text.insert(tk.END, f"   📁 备份目录: {backup_dir}\n")
+                    overview_text.insert(tk.END, t("view_info.backup_status_created", count=backup_count) + "\n")
+                    overview_text.insert(tk.END, t("view_info.backup_directory", path=str(backup_dir)) + "\n")
                 else:
-                    overview_text.insert(tk.END, "💾 备份状态: ❌ 暂无备份\n")
+                    overview_text.insert(tk.END, t("view_info.backup_status_none") + "\n")
 
                 # 设备ID反制详细信息
                 self._load_device_id_details(device_id_text, jetbrains_info, vscode_info)
@@ -1214,61 +1221,61 @@ class AugmentCleanerGUI:
                 self._load_network_fingerprint_details(network_text)
 
             except Exception as e:
-                overview_text.insert(tk.END, f"❌ 获取系统概览失败: {e}\n")
+                overview_text.insert(tk.END, t("view_info.overview_failed", error=str(e)) + "\n")
                 import traceback
-                overview_text.insert(tk.END, f"详细错误:\n{traceback.format_exc()}")
+                overview_text.insert(tk.END, t("view_info.detailed_error") + ":\n" + traceback.format_exc())
 
         threading.Thread(target=load_info, daemon=True).start()
 
     def _get_database_name_from_path(self, db_path):
-        """从数据库路径获取数据库名称和类型"""
+        """Lấy tên và loại database từ đường dẫn"""
         path_str = str(db_path).lower()
 
-        # VSCode/Cursor 工作区数据库
+        # VSCode/Cursor workspace database
         if 'code' in path_str or 'cursor' in path_str:
             if 'workspacestorage' in path_str:
                 if 'cursor' in path_str:
-                    return "Cursor 工作区数据库"
+                    return t("database_names.cursor_workspace")
                 else:
-                    return "VSCode 工作区数据库"
+                    return t("database_names.vscode_workspace")
             elif 'globalstorage' in path_str:
                 if 'cursor' in path_str:
-                    return "Cursor 全局存储"
+                    return t("database_names.cursor_global")
                 else:
-                    return "VSCode 全局存储"
+                    return t("database_names.vscode_global")
             else:
                 if 'cursor' in path_str:
-                    return "Cursor 状态数据库"
+                    return t("database_names.cursor_state")
                 else:
-                    return "VSCode 状态数据库"
+                    return t("database_names.vscode_state")
 
-        # 浏览器数据库
+        # Browser database
         elif 'chrome' in path_str:
             if 'google' in path_str:
-                return "Google Chrome 历史数据库"
+                return t("database_names.chrome_history")
             else:
-                return "Chrome 历史数据库"
+                return t("database_names.chrome_simple")
         elif 'edge' in path_str:
-            return "Microsoft Edge 历史数据库"
+            return t("database_names.edge_history")
         elif 'firefox' in path_str:
-            return "Firefox 历史数据库"
+            return t("database_names.firefox_history")
         elif 'opera' in path_str:
-            return "Opera 历史数据库"
+            return t("database_names.opera_history")
         elif 'brave' in path_str:
-            return "Brave 历史数据库"
+            return t("database_names.brave_history")
         elif 'vivaldi' in path_str:
-            return "Vivaldi 历史数据库"
+            return t("database_names.vivaldi_history")
         else:
-            # 尝试从文件名推断
+            # Thử suy luận từ tên file
             file_name = Path(db_path).name.lower()
             if 'state.vscdb' in file_name:
-                return "IDE 状态数据库"
+                return t("database_names.ide_state")
             elif 'history' in file_name:
-                return "浏览器历史数据库"
+                return t("database_names.browser_history")
             elif 'cookies' in file_name:
-                return "浏览器Cookie数据库"
+                return t("database_names.browser_cookies")
             else:
-                return "未知数据库"
+                return t("database_names.unknown")
 
     def _get_jetbrains_software_info(self, jetbrains_info):
         """获取详细的JetBrains软件信息"""
@@ -1395,44 +1402,44 @@ class AugmentCleanerGUI:
             return "Unknown"
 
     def _load_device_id_details(self, text_widget, jetbrains_info, vscode_info):
-        """加载设备ID反制详细信息"""
+        """Tải thông tin chi tiết phản công Device ID"""
         from datetime import datetime
 
-        text_widget.insert(tk.END, "🆔 设备ID限制反制详细信息\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.header") + "\n")
         text_widget.insert(tk.END, "=" * 70 + "\n\n")
 
-        text_widget.insert(tk.END, "💡 设备ID反制原理:\n")
-        text_widget.insert(tk.END, "   • AugmentCode通过设备唯一标识符来识别和限制用户\n")
-        text_widget.insert(tk.END, "   • 修改这些标识符可以让AugmentCode认为这是一个新设备\n")
-        text_widget.insert(tk.END, "   • 锁定文件防止AugmentCode重新生成原始ID\n\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.principle_title") + "\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.principle_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.principle_2") + "\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.principle_3") + "\n\n")
 
-        # JetBrains设备ID部分
-        text_widget.insert(tk.END, "🔧 JetBrains系列软件设备ID:\n")
+        # Phần Device ID JetBrains
+        text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_title") + "\n")
         if jetbrains_info['installed']:
-            # 获取详细的软件信息
+            # Lấy thông tin phần mềm chi tiết
             software_list = self._get_jetbrains_software_info(jetbrains_info)
 
-            text_widget.insert(tk.END, f"   📊 检测状态: ✅ 已安装\n")
-            text_widget.insert(tk.END, f"   📁 配置目录: {jetbrains_info.get('config_dir', '未知')}\n")
-            text_widget.insert(tk.END, f"   📄 设备ID文件数量: {len(jetbrains_info['existing_files'])} 个 (所有JetBrains软件共享)\n\n")
+            text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_status_installed") + "\n")
+            text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_config_dir", config_dir=jetbrains_info.get('config_dir', 'Không xác định')) + "\n")
+            text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_id_files_count", count=len(jetbrains_info['existing_files'])) + "\n\n")
 
-            # 显示检测到的具体软件
+            # Hiển thị phần mềm cụ thể được phát hiện
             if software_list:
-                text_widget.insert(tk.END, f"   🎯 检测到的JetBrains软件 ({len(software_list)} 个):\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_software_detected", count=len(software_list)) + "\n")
                 for i, software in enumerate(software_list, 1):
                     name = software['name']
                     version = software['version']
                     dir_name = software['dir_name']
 
                     version_str = f" {version}" if version else ""
-                    text_widget.insert(tk.END, f"      {i}. {name}{version_str}\n")
-                    text_widget.insert(tk.END, f"         📁 目录: {dir_name}\n")
+                    text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_software_item", num=i, name=name, version=version_str) + "\n")
+                    text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_software_dir", dir_name=dir_name) + "\n")
                 text_widget.insert(tk.END, "\n")
             else:
-                text_widget.insert(tk.END, "   ⚠️ 未检测到具体的JetBrains软件目录\n")
-                text_widget.insert(tk.END, "   💡 可能原因: 软件未启动过或配置目录结构不同\n\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_no_specific_dir") + "\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_possible_reason") + "\n\n")
 
-            text_widget.insert(tk.END, "   📄 设备ID文件详情:\n")
+            text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_id_file_details") + "\n")
             for i, file_path in enumerate(jetbrains_info['existing_files'], 1):
                 file_obj = Path(file_path)
                 is_locked = self.jetbrains_handler.file_locker.is_file_locked(file_obj)
@@ -1440,54 +1447,55 @@ class AugmentCleanerGUI:
 
                 try:
                     size = file_obj.stat().st_size if file_obj.exists() else 0
-                    mtime = datetime.fromtimestamp(file_obj.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S') if file_obj.exists() else "未知"
+                    mtime = datetime.fromtimestamp(file_obj.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S') if file_obj.exists() else "Không xác định"
                 except:
                     size = 0
-                    mtime = "未知"
+                    mtime = "Không xác định"
 
                 text_widget.insert(tk.END, f"\n   {i}. {software_name}\n")
-                text_widget.insert(tk.END, f"      📁 文件: {file_obj.name}\n")
-                text_widget.insert(tk.END, f"      📁 路径: {file_path}\n")
-                text_widget.insert(tk.END, f"      📏 大小: {size} 字节\n")
-                text_widget.insert(tk.END, f"      🕒 修改时间: {mtime}\n")
-                text_widget.insert(tk.END, f"      🔒 锁定状态: {'✅ 已锁定' if is_locked else '❌ 未锁定'}\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_file_name", file_name=file_obj.name) + "\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_file_path", file_path=file_path) + "\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_file_size", size=size) + "\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_modified_time", mtime=mtime) + "\n")
+                lock_status = "✅ Đã khóa" if is_locked else "❌ Chưa khóa"
+                text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_lock_status", status=lock_status) + "\n")
 
-                # 读取当前ID
+                # Đọc ID hiện tại
                 try:
                     if file_obj.exists():
                         current_id = file_obj.read_text(encoding='utf-8').strip()
                         display_id = current_id[:32] + ('...' if len(current_id) > 32 else '')
-                        text_widget.insert(tk.END, f"      🆔 当前ID: {display_id}\n")
+                        text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_current_id", id=display_id) + "\n")
                 except:
-                    text_widget.insert(tk.END, f"      🆔 当前ID: 读取失败\n")
+                    text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_id_read_failed") + "\n")
         else:
-            text_widget.insert(tk.END, "   ❌ 未检测到JetBrains系列软件安装\n")
+            text_widget.insert(tk.END, t("view_info.device_id_details.jetbrains_not_found") + "\n")
 
         text_widget.insert(tk.END, "\n")
 
-        # VSCode/Cursor设备ID部分
-        text_widget.insert(tk.END, "📝 VSCode/Cursor设备ID:\n")
+        # Phần Device ID VSCode/Cursor
+        text_widget.insert(tk.END, t("view_info.device_id_details.vscode_title") + "\n")
         if vscode_info['installed']:
-            text_widget.insert(tk.END, f"   📊 检测状态: ✅ 已安装 ({len(vscode_info['variants_found'])} 个变体)\n")
-            text_widget.insert(tk.END, f"   📁 存储目录数量: {vscode_info.get('total_directories', 0)}\n\n")
+            text_widget.insert(tk.END, t("view_info.device_id_details.vscode_status_installed", count=len(vscode_info['variants_found'])) + "\n")
+            text_widget.insert(tk.END, t("view_info.device_id_details.vscode_storage_dirs", count=vscode_info.get('total_directories', 0)) + "\n\n")
 
-            # 分离VSCode和Cursor
+            # Tách VSCode và Cursor
             vscode_variants = [v for v in vscode_info['variants_found'] if 'cursor' not in v.lower()]
             cursor_variants = [v for v in vscode_info['variants_found'] if 'cursor' in v.lower()]
 
             if vscode_variants:
-                text_widget.insert(tk.END, "   📝 VSCode 变体:\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.vscode_variants") + "\n")
                 for variant in vscode_variants:
                     friendly_name = self._get_friendly_vscode_name(variant)
                     text_widget.insert(tk.END, f"      ✅ {friendly_name}\n")
 
             if cursor_variants:
-                text_widget.insert(tk.END, "   🖱️ Cursor 变体:\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.cursor_variants") + "\n")
                 for variant in cursor_variants:
                     friendly_name = self._get_friendly_vscode_name(variant)
                     text_widget.insert(tk.END, f"      ✅ {friendly_name}\n")
 
-            # Storage 文件详情
+            # Chi tiết file Storage
             try:
                 vscode_dirs = self.path_manager.get_vscode_directories()
                 storage_files = []
@@ -1496,11 +1504,11 @@ class AugmentCleanerGUI:
                     if storage_file:
                         storage_files.append((vscode_dir, storage_file))
 
-                text_widget.insert(tk.END, f"\n   🆔 设备ID存储文件 ({len(storage_files)} 个):\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.vscode_storage_files", count=len(storage_files)) + "\n")
 
                 for i, (vscode_dir, file_path) in enumerate(storage_files, 1):
                     is_locked = self.vscode_handler.file_locker.is_file_locked(file_path)
-                    # 从路径推断变体名称并转换为友好名称
+                    # Suy luận tên biến thể từ đường dẫn và chuyển đổi thành tên thân thiện
                     if "cursor" in str(vscode_dir).lower():
                         variant_name = "Cursor"
                     elif "code - insiders" in str(vscode_dir).lower():
@@ -1514,79 +1522,80 @@ class AugmentCleanerGUI:
 
                     try:
                         size = file_path.stat().st_size if file_path.exists() else 0
-                        mtime = datetime.fromtimestamp(file_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S') if file_path.exists() else "未知"
+                        mtime = datetime.fromtimestamp(file_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S') if file_path.exists() else "Không xác định"
                     except:
                         size = 0
-                        mtime = "未知"
+                        mtime = "Không xác định"
 
                     text_widget.insert(tk.END, f"\n   {i}. {variant_name} - {file_path.name}\n")
-                    text_widget.insert(tk.END, f"      📁 路径: {file_path}\n")
-                    text_widget.insert(tk.END, f"      📏 大小: {size} 字节\n")
-                    text_widget.insert(tk.END, f"      🕒 修改时间: {mtime}\n")
-                    text_widget.insert(tk.END, f"      🔒 锁定状态: {'✅ 已锁定' if is_locked else '❌ 未锁定'}\n")
+                    text_widget.insert(tk.END, t("view_info.device_id_details.vscode_file_path", file_path=file_path) + "\n")
+                    text_widget.insert(tk.END, t("view_info.device_id_details.vscode_file_size", size=size) + "\n")
+                    text_widget.insert(tk.END, t("view_info.device_id_details.vscode_modified_time", mtime=mtime) + "\n")
+                    lock_status = "✅ Đã khóa" if is_locked else "❌ Chưa khóa"
+                    text_widget.insert(tk.END, t("view_info.device_id_details.vscode_lock_status", status=lock_status) + "\n")
 
-                    # 读取当前ID
+                    # Đọc ID hiện tại
                     try:
                         if file_path.exists():
                             if file_path.name == "machineId":
                                 current_id = file_path.read_text(encoding='utf-8').strip()
                                 display_id = current_id[:32] + ('...' if len(current_id) > 32 else '')
-                                text_widget.insert(tk.END, f"      🆔 当前ID: {display_id}\n")
+                                text_widget.insert(tk.END, t("view_info.device_id_details.vscode_current_id", id=display_id) + "\n")
                             elif file_path.name == "storage.json":
                                 import json
-                                with open(file_path, 'r', encoding='utf-8') as f:
+                                with open(file_path, 'r', encoding='utf-8-sig') as f:
                                     data = json.load(f)
-                                text_widget.insert(tk.END, f"      🆔 包含的设备ID:\n")
+                                text_widget.insert(tk.END, t("view_info.device_id_details.vscode_contains_ids") + "\n")
                                 for key in ["telemetry.machineId", "telemetry.devDeviceId", "telemetry.sqmId"]:
                                     if key in data:
                                         value = str(data[key])[:32] + ('...' if len(str(data[key])) > 32 else '')
-                                        text_widget.insert(tk.END, f"         • {key}: {value}\n")
+                                        text_widget.insert(tk.END, t("view_info.device_id_details.vscode_id_item", key=key, value=value) + "\n")
                     except Exception as e:
-                        text_widget.insert(tk.END, f"      🆔 当前ID: 读取失败 ({e})\n")
+                        text_widget.insert(tk.END, t("view_info.device_id_details.vscode_id_read_failed", error=str(e)) + "\n")
             except Exception as e:
-                text_widget.insert(tk.END, f"   ❌ 获取存储文件失败: {e}\n")
+                text_widget.insert(tk.END, t("view_info.device_id_details.vscode_get_storage_failed", error=str(e)) + "\n")
         else:
-            text_widget.insert(tk.END, "   ❌ 未检测到VSCode/Cursor安装\n")
+            text_widget.insert(tk.END, t("view_info.device_id_details.vscode_not_found") + "\n")
 
-        text_widget.insert(tk.END, "\n💡 反制操作说明:\n")
-        text_widget.insert(tk.END, "   1. 🔄 生成新的随机设备ID\n")
-        text_widget.insert(tk.END, "   2. 💾 自动备份原始ID文件\n")
-        text_widget.insert(tk.END, "   3. ✏️ 将新ID写入配置文件\n")
-        text_widget.insert(tk.END, "   4. 🔒 锁定文件防止被覆盖\n")
-        text_widget.insert(tk.END, "   5. 🚀 重启IDE即可使用新账户登录\n")
+        text_widget.insert(tk.END, "\n" + t("view_info.device_id_details.operation_instructions") + "\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.operation_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.operation_2") + "\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.operation_3") + "\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.operation_4") + "\n")
+        text_widget.insert(tk.END, t("view_info.device_id_details.operation_5") + "\n")
 
     def _load_database_record_details(self, text_widget, vscode_info):
-        """加载数据库记录反制详细信息"""
-        text_widget.insert(tk.END, "🗃️ 数据库记录限制反制详细信息\n")
+        """Tải thông tin chi tiết phản công bản ghi database"""
+        text_widget.insert(tk.END, t("view_info.database_details.header") + "\n")
         text_widget.insert(tk.END, "=" * 70 + "\n\n")
 
-        text_widget.insert(tk.END, "💡 数据库记录反制原理:\n")
-        text_widget.insert(tk.END, "   • AugmentCode在IDE数据库中存储登录状态和使用记录\n")
-        text_widget.insert(tk.END, "   • 清理这些记录可以让AugmentCode认为这是全新的IDE\n")
-        text_widget.insert(tk.END, "   • 只清理AugmentCode相关记录，保留其他配置\n\n")
+        text_widget.insert(tk.END, t("view_info.database_details.principle_title") + "\n")
+        text_widget.insert(tk.END, t("view_info.database_details.principle_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.database_details.principle_2") + "\n")
+        text_widget.insert(tk.END, t("view_info.database_details.principle_3") + "\n\n")
 
-        # 数据库记录反制主要针对VSCode/Cursor的全局存储数据库
-        text_widget.insert(tk.END, "🗃️ 全局存储数据库记录:\n")
-        text_widget.insert(tk.END, "   💡 主要清理IDE的全局状态数据库，如登录状态、使用记录等\n")
-        text_widget.insert(tk.END, "   🎯 目标：VSCode/Cursor的state.vscdb文件\n\n")
+        # Phản công bản ghi database chủ yếu nhắm vào database lưu trữ toàn cục của VSCode/Cursor
+        text_widget.insert(tk.END, t("view_info.database_details.global_storage_title") + "\n")
+        text_widget.insert(tk.END, t("view_info.database_details.global_storage_note_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.database_details.global_storage_note_2") + "\n\n")
 
         try:
             if not vscode_info.get('installed'):
-                text_widget.insert(tk.END, "❌ 未检测到VSCode/Cursor安装\n")
+                text_widget.insert(tk.END, t("view_info.database_details.not_found") + "\n")
                 return
 
-            text_widget.insert(tk.END, f"📊 总体状态:\n")
-            text_widget.insert(tk.END, f"   🔍 检测到的IDE变体: {', '.join(vscode_info.get('variants_found', []))}\n")
-            text_widget.insert(tk.END, f"   📁 配置目录数量: {vscode_info.get('total_directories', 0)}\n\n")
+            text_widget.insert(tk.END, t("view_info.database_details.overall_status") + "\n")
+            text_widget.insert(tk.END, t("view_info.database_details.detected_variants", variants=', '.join(vscode_info.get('variants_found', []))) + "\n")
+            text_widget.insert(tk.END, t("view_info.database_details.config_dirs_count", count=vscode_info.get('total_directories', 0)) + "\n\n")
 
-            # 显示每个变体的数据库详细信息
+            # Hiển thị thông tin chi tiết database của từng biến thể
             for variant_name in vscode_info.get('variants_found', []):
                 is_cursor = 'cursor' in variant_name.lower()
                 icon = "🖱️" if is_cursor else "📝"
                 friendly_name = self._get_friendly_vscode_name(variant_name)
-                text_widget.insert(tk.END, f"{icon} {friendly_name} 数据库记录:\n")
+                text_widget.insert(tk.END, t("view_info.database_details.variant_database_records", icon=icon, name=friendly_name) + "\n")
 
-                # 查找该变体的配置目录 - 只查找globalStorage目录
+                # Tìm thư mục cấu hình của biến thể này - chỉ tìm thư mục globalStorage
                 variant_dirs = []
                 for storage_dir in vscode_info.get('storage_directories', []):
                     if (variant_name.lower() in storage_dir.lower() and
@@ -1595,14 +1604,14 @@ class AugmentCleanerGUI:
                         variant_dirs.append(storage_dir)
 
                 if not variant_dirs:
-                    text_widget.insert(tk.END, f"   ❌ 未找到配置目录\n\n")
+                    text_widget.insert(tk.END, t("view_info.database_details.config_dir_not_found") + "\n\n")
                     continue
 
                 for config_dir in variant_dirs:
                     config_path = Path(config_dir)
                     parent_name = config_path.parent.name
-                    text_widget.insert(tk.END, f"   📂 配置目录: {parent_name}\n")
-                    text_widget.insert(tk.END, f"      📁 路径: {config_dir}\n")
+                    text_widget.insert(tk.END, t("view_info.database_details.config_dir_path", parent_name=parent_name) + "\n")
+                    text_widget.insert(tk.END, t("view_info.database_details.config_dir_full_path", config_dir=config_dir) + "\n")
 
                     # 检查全局存储数据库
                     global_storage_path = config_path / "User" / "globalStorage"
@@ -1631,51 +1640,51 @@ class AugmentCleanerGUI:
                             text_widget.insert(tk.END, f"      🗃️ 全局存储数据库: ✅ 存在\n")
                             text_widget.insert(tk.END, f"         � 路径: {state_db_path}\n")
                             text_widget.insert(tk.END, f"         �📏 大小: {state_db_path.stat().st_size} 字节\n")
-                            text_widget.insert(tk.END, f"         📊 总记录数: {total_records} 条\n")
-                            text_widget.insert(tk.END, f"         🏷️ AugmentCode记录: {augment_count} 条\n")
+                            text_widget.insert(tk.END, t("view_info.database_details.global_db_total_records", total=total_records) + "\n")
+                            text_widget.insert(tk.END, t("view_info.database_details.global_db_augment_records", count=augment_count) + "\n")
 
                             if augment_keys:
-                                text_widget.insert(tk.END, f"         📋 AugmentCode记录示例:\n")
-                                for key in augment_keys[:5]:  # 只显示前5个
+                                text_widget.insert(tk.END, t("view_info.database_details.global_db_augment_examples") + "\n")
+                                for key in augment_keys[:5]:  # Chỉ hiển thị 5 cái đầu
                                     text_widget.insert(tk.END, f"            • {key}\n")
                                 if len(augment_keys) > 5:
-                                    text_widget.insert(tk.END, f"            • ... 还有 {len(augment_keys) - 5} 条记录\n")
+                                    text_widget.insert(tk.END, t("view_info.database_details.global_db_more_records", count=len(augment_keys) - 5) + "\n")
 
                         except Exception as e:
-                            text_widget.insert(tk.END, f"      🗃️ 全局存储数据库: ❌ 无法访问 ({e})\n")
-                            text_widget.insert(tk.END, f"         📁 路径: {state_db_path}\n")
-                            text_widget.insert(tk.END, f"         💡 说明: 数据库文件存在但无法读取，可能被占用或损坏\n")
+                            text_widget.insert(tk.END, t("view_info.database_details.global_db_inaccessible", error=str(e)) + "\n")
+                            text_widget.insert(tk.END, t("view_info.database_details.global_db_inaccessible_path", path=str(state_db_path)) + "\n")
+                            text_widget.insert(tk.END, t("view_info.database_details.global_db_inaccessible_note") + "\n")
                     else:
-                        text_widget.insert(tk.END, f"      🗃️ 全局存储数据库: ❌ 不存在\n")
-                        text_widget.insert(tk.END, f"         📁 预期路径: {state_db_path}\n")
-                        text_widget.insert(tk.END, f"         💡 说明: 软件未使用过或数据库未创建，这是正常的\n")
-                        text_widget.insert(tk.END, f"         🔍 原因: 首次安装、重置过配置、或从未启动过AugmentCode插件\n")
+                        text_widget.insert(tk.END, t("view_info.database_details.global_db_not_exists") + "\n")
+                        text_widget.insert(tk.END, t("view_info.database_details.global_db_not_exists_path", path=str(state_db_path)) + "\n")
+                        text_widget.insert(tk.END, t("view_info.database_details.global_db_not_exists_note") + "\n")
+                        text_widget.insert(tk.END, t("view_info.database_details.global_db_not_exists_reason") + "\n")
 
                     text_widget.insert(tk.END, "\n")
 
                 text_widget.insert(tk.END, "\n")
 
-            text_widget.insert(tk.END, "💡 反制操作说明:\n")
-            text_widget.insert(tk.END, "   1. 🔍 扫描IDE数据库中的AugmentCode记录\n")
-            text_widget.insert(tk.END, "   2. 💾 自动备份数据库文件\n")
-            text_widget.insert(tk.END, "   3. 🗑️ 精确删除AugmentCode相关记录\n")
-            text_widget.insert(tk.END, "   4. ✅ 保留其他IDE配置和数据\n")
-            text_widget.insert(tk.END, "   5. 🚀 重启IDE后AugmentCode将无法识别使用历史\n")
+            text_widget.insert(tk.END, t("view_info.database_details.operation_instructions") + "\n")
+            text_widget.insert(tk.END, t("view_info.database_details.operation_1") + "\n")
+            text_widget.insert(tk.END, t("view_info.database_details.operation_2") + "\n")
+            text_widget.insert(tk.END, t("view_info.database_details.operation_3") + "\n")
+            text_widget.insert(tk.END, t("view_info.database_details.operation_4") + "\n")
+            text_widget.insert(tk.END, t("view_info.database_details.operation_5") + "\n")
 
         except Exception as e:
-            text_widget.insert(tk.END, f"❌ 获取数据库信息失败: {e}\n")
+            text_widget.insert(tk.END, t("view_info.database_details.get_info_failed", error=str(e)) + "\n")
             import traceback
-            text_widget.insert(tk.END, f"详细错误:\n{traceback.format_exc()}")
+            text_widget.insert(tk.END, t("view_info.database_details.detailed_error") + ":\n" + traceback.format_exc())
 
     def _load_workspace_record_details(self, text_widget, vscode_info):
-        """加载工作区记录反制详细信息"""
-        text_widget.insert(tk.END, "📁 工作区记录限制反制详细信息\n")
+        """Tải thông tin chi tiết phản công bản ghi workspace"""
+        text_widget.insert(tk.END, t("view_info.workspace_details.header") + "\n")
         text_widget.insert(tk.END, "=" * 70 + "\n\n")
 
-        text_widget.insert(tk.END, "💡 工作区记录反制原理:\n")
-        text_widget.insert(tk.END, "   • AugmentCode记录每个项目的使用情况和配置\n")
-        text_widget.insert(tk.END, "   • 清理工作区记录可以隐藏项目使用痕迹\n")
-        text_widget.insert(tk.END, "   • 只清理AugmentCode数据，保留项目配置\n\n")
+        text_widget.insert(tk.END, t("view_info.workspace_details.principle_title") + "\n")
+        text_widget.insert(tk.END, t("view_info.workspace_details.principle_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.workspace_details.principle_2") + "\n")
+        text_widget.insert(tk.END, t("view_info.workspace_details.principle_3") + "\n\n")
 
         # 工作区记录反制主要针对VSCode/Cursor的项目工作区
         text_widget.insert(tk.END, "📁 项目工作区记录:\n")
@@ -1684,20 +1693,20 @@ class AugmentCleanerGUI:
 
         try:
             if not vscode_info.get('installed'):
-                text_widget.insert(tk.END, "❌ 未检测到VSCode/Cursor安装\n")
+                text_widget.insert(tk.END, t("view_info.workspace_details.not_found") + "\n")
                 return
 
-            text_widget.insert(tk.END, f"📊 总体状态:\n")
-            text_widget.insert(tk.END, f"   🔍 检测到的IDE变体: {', '.join(vscode_info.get('variants_found', []))}\n\n")
+            text_widget.insert(tk.END, t("view_info.workspace_details.overall_status") + "\n")
+            text_widget.insert(tk.END, t("view_info.workspace_details.detected_variants", variants=', '.join(vscode_info.get('variants_found', []))) + "\n\n")
 
-            # 显示每个变体的工作区详细信息
+            # Hiển thị thông tin chi tiết workspace của từng biến thể
             for variant_name in vscode_info.get('variants_found', []):
                 is_cursor = 'cursor' in variant_name.lower()
                 icon = "🖱️" if is_cursor else "📝"
                 friendly_name = self._get_friendly_vscode_name(variant_name)
-                text_widget.insert(tk.END, f"{icon} {friendly_name} 工作区记录:\n")
+                text_widget.insert(tk.END, t("view_info.workspace_details.variant_workspace_records", icon=icon, name=friendly_name) + "\n")
 
-                # 查找该变体的配置目录 - 只查找workspaceStorage目录
+                # Tìm thư mục cấu hình của biến thể này - chỉ tìm thư mục workspaceStorage
                 variant_dirs = []
                 for storage_dir in vscode_info.get('storage_directories', []):
                     if (variant_name.lower() in storage_dir.lower() and
@@ -1706,26 +1715,26 @@ class AugmentCleanerGUI:
                         variant_dirs.append(storage_dir)
 
                 if not variant_dirs:
-                    text_widget.insert(tk.END, f"   ❌ 未找到配置目录\n\n")
+                    text_widget.insert(tk.END, t("view_info.workspace_details.config_dir_not_found") + "\n\n")
                     continue
 
                 for config_dir in variant_dirs:
                     config_path = Path(config_dir)
                     parent_name = config_path.parent.name
-                    text_widget.insert(tk.END, f"   📂 配置目录: {parent_name}\n")
+                    text_widget.insert(tk.END, t("view_info.workspace_details.config_dir_path", parent_name=parent_name) + "\n")
 
-                    # 检查工作区存储
+                    # Kiểm tra workspace storage
                     workspace_storage_path = config_path / "User" / "workspaceStorage"
                     if workspace_storage_path.exists():
                         try:
                             workspace_dirs = list(workspace_storage_path.iterdir())
                             workspace_count = len(workspace_dirs)
-                            text_widget.insert(tk.END, f"      📁 工作区存储: ✅ 存在 ({workspace_count} 个项目)\n")
-                            text_widget.insert(tk.END, f"         📁 路径: {workspace_storage_path}\n")
+                            text_widget.insert(tk.END, t("view_info.workspace_details.workspace_storage_exists", count=workspace_count) + "\n")
+                            text_widget.insert(tk.END, t("view_info.workspace_details.workspace_storage_path", path=str(workspace_storage_path)) + "\n")
 
-                            # 显示前几个项目的详细信息
+                            # Hiển thị thông tin chi tiết của một số dự án đầu
                             if workspace_count > 0:
-                                text_widget.insert(tk.END, f"      📋 项目详情 (显示前5个):\n")
+                                text_widget.insert(tk.END, t("view_info.workspace_details.project_details") + "\n")
                                 for i, project_dir in enumerate(workspace_dirs[:5]):
                                     if project_dir.is_dir():
                                         project_db_path = project_dir / "state.vscdb"
@@ -1750,78 +1759,79 @@ class AugmentCleanerGUI:
                                         except:
                                             dir_size = 0
 
-                                        text_widget.insert(tk.END, f"         {i+1}. 项目ID: {project_dir.name[:16]}...\n")
-                                        text_widget.insert(tk.END, f"            📁 完整路径: {project_dir}\n")
-                                        text_widget.insert(tk.END, f"            📊 总记录数: {total_records} 条\n")
-                                        text_widget.insert(tk.END, f"            🏷️ AugmentCode记录: {augment_records} 条\n")
-                                        text_widget.insert(tk.END, f"            📏 目录大小: {dir_size} 字节\n")
+                                        project_id = project_dir.name[:16] + "..."
+                                        text_widget.insert(tk.END, t("view_info.workspace_details.project_id", num=i+1, project_id=project_id) + "\n")
+                                        text_widget.insert(tk.END, t("view_info.workspace_details.project_full_path", path=str(project_dir)) + "\n")
+                                        text_widget.insert(tk.END, t("view_info.workspace_details.project_total_records", total=total_records) + "\n")
+                                        text_widget.insert(tk.END, t("view_info.workspace_details.project_augment_records", count=augment_records) + "\n")
+                                        text_widget.insert(tk.END, t("view_info.workspace_details.project_dir_size", size=dir_size) + "\n")
 
                                 if workspace_count > 5:
-                                    text_widget.insert(tk.END, f"         ... 还有 {workspace_count - 5} 个项目\n")
+                                    text_widget.insert(tk.END, t("view_info.workspace_details.more_projects", count=workspace_count - 5) + "\n")
 
                         except Exception as e:
-                            text_widget.insert(tk.END, f"      📁 工作区存储: ❌ 无法访问 ({e})\n")
-                            text_widget.insert(tk.END, f"         📁 路径: {workspace_storage_path}\n")
+                            text_widget.insert(tk.END, t("view_info.workspace_details.workspace_storage_inaccessible", error=str(e)) + "\n")
+                            text_widget.insert(tk.END, t("view_info.workspace_details.workspace_storage_inaccessible_path", path=str(workspace_storage_path)) + "\n")
                     else:
-                        text_widget.insert(tk.END, f"      📁 工作区存储: ❌ 不存在\n")
-                        text_widget.insert(tk.END, f"         📁 预期路径: {workspace_storage_path}\n")
-                        text_widget.insert(tk.END, f"         💡 说明: 未创建过项目工作区或已被清理\n")
+                        text_widget.insert(tk.END, t("view_info.workspace_details.workspace_storage_not_exists") + "\n")
+                        text_widget.insert(tk.END, t("view_info.workspace_details.workspace_storage_not_exists_path", path=str(workspace_storage_path)) + "\n")
+                        text_widget.insert(tk.END, t("view_info.workspace_details.workspace_storage_not_exists_note") + "\n")
 
                     text_widget.insert(tk.END, "\n")
 
                 text_widget.insert(tk.END, "\n")
 
-            text_widget.insert(tk.END, "💡 反制操作说明:\n")
-            text_widget.insert(tk.END, "   1. 🔍 扫描所有项目工作区记录\n")
-            text_widget.insert(tk.END, "   2. 💾 自动备份项目数据库\n")
-            text_widget.insert(tk.END, "   3. 🗑️ 精确删除AugmentCode项目记录\n")
-            text_widget.insert(tk.END, "   4. ✅ 保留项目配置和其他数据\n")
-            text_widget.insert(tk.END, "   5. 🚀 清理后AugmentCode无法追踪项目使用历史\n")
+            text_widget.insert(tk.END, t("view_info.workspace_details.operation_instructions") + "\n")
+            text_widget.insert(tk.END, t("view_info.workspace_details.operation_1") + "\n")
+            text_widget.insert(tk.END, t("view_info.workspace_details.operation_2") + "\n")
+            text_widget.insert(tk.END, t("view_info.workspace_details.operation_3") + "\n")
+            text_widget.insert(tk.END, t("view_info.workspace_details.operation_4") + "\n")
+            text_widget.insert(tk.END, t("view_info.workspace_details.operation_5") + "\n")
 
         except Exception as e:
-            text_widget.insert(tk.END, f"❌ 获取工作区信息失败: {e}\n")
+            text_widget.insert(tk.END, t("view_info.workspace_details.get_info_failed", error=str(e)) + "\n")
             import traceback
-            text_widget.insert(tk.END, f"详细错误:\n{traceback.format_exc()}")
+            text_widget.insert(tk.END, t("view_info.workspace_details.detailed_error") + ":\n" + traceback.format_exc())
 
     def _load_network_fingerprint_details(self, text_widget):
-        """加载网络指纹反制详细信息"""
-        text_widget.insert(tk.END, "🌐 网络指纹限制反制详细信息\n")
+        """Tải thông tin chi tiết phản công dấu vết mạng"""
+        text_widget.insert(tk.END, t("view_info.network_details.header") + "\n")
         text_widget.insert(tk.END, "=" * 70 + "\n\n")
 
-        text_widget.insert(tk.END, "💡 网络指纹反制原理:\n")
-        text_widget.insert(tk.END, "   • AugmentCode可能通过浏览器指纹识别用户\n")
-        text_widget.insert(tk.END, "   • 包括Canvas指纹、WebGL指纹、字体指纹等\n")
-        text_widget.insert(tk.END, "   • 清理这些指纹可以提高匿名性\n\n")
+        text_widget.insert(tk.END, t("view_info.network_details.principle_title") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.principle_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.principle_2") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.principle_3") + "\n\n")
 
-        text_widget.insert(tk.END, "⚠️ 当前状态: 高级功能 (暂未实现)\n\n")
+        text_widget.insert(tk.END, t("view_info.network_details.current_status") + "\n\n")
 
-        text_widget.insert(tk.END, "🔧 计划实现的功能:\n")
-        text_widget.insert(tk.END, "   1. 🎨 Canvas指纹清理\n")
-        text_widget.insert(tk.END, "      • 清理Canvas绘制缓存\n")
-        text_widget.insert(tk.END, "      • 重置Canvas上下文\n\n")
+        text_widget.insert(tk.END, t("view_info.network_details.planned_features") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.canvas_fingerprint") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.canvas_fingerprint_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.canvas_fingerprint_2") + "\n\n")
 
-        text_widget.insert(tk.END, "   2. 🖼️ WebGL指纹清理\n")
-        text_widget.insert(tk.END, "      • 清理WebGL渲染器信息\n")
-        text_widget.insert(tk.END, "      • 重置GPU信息缓存\n\n")
+        text_widget.insert(tk.END, t("view_info.network_details.webgl_fingerprint") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.webgl_fingerprint_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.webgl_fingerprint_2") + "\n\n")
 
-        text_widget.insert(tk.END, "   3. 🔤 字体指纹清理\n")
-        text_widget.insert(tk.END, "      • 清理字体检测缓存\n")
-        text_widget.insert(tk.END, "      • 重置字体列表\n\n")
+        text_widget.insert(tk.END, t("view_info.network_details.font_fingerprint") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.font_fingerprint_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.font_fingerprint_2") + "\n\n")
 
-        text_widget.insert(tk.END, "   4. 🌐 网络缓存清理\n")
-        text_widget.insert(tk.END, "      • 清理DNS缓存\n")
-        text_widget.insert(tk.END, "      • 清理HTTP缓存\n")
-        text_widget.insert(tk.END, "      • 清理Cookie和LocalStorage\n\n")
+        text_widget.insert(tk.END, t("view_info.network_details.network_cache") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.network_cache_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.network_cache_2") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.network_cache_3") + "\n\n")
 
-        text_widget.insert(tk.END, "⚠️ 风险提示:\n")
-        text_widget.insert(tk.END, "   • 可能影响其他网站的正常使用\n")
-        text_widget.insert(tk.END, "   • 可能导致需要重新登录其他服务\n")
-        text_widget.insert(tk.END, "   • 建议在了解风险后谨慎使用\n\n")
+        text_widget.insert(tk.END, t("view_info.network_details.risk_warning") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.risk_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.risk_2") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.risk_3") + "\n\n")
 
-        text_widget.insert(tk.END, "💡 使用建议:\n")
-        text_widget.insert(tk.END, "   • 目前主要通过设备ID和数据库记录反制即可\n")
-        text_widget.insert(tk.END, "   • 网络指纹反制适用于高级用户\n")
-        text_widget.insert(tk.END, "   • 如有需要，可以手动清理浏览器数据\n")
+        text_widget.insert(tk.END, t("view_info.network_details.usage_suggestion") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.suggestion_1") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.suggestion_2") + "\n")
+        text_widget.insert(tk.END, t("view_info.network_details.suggestion_3") + "\n")
 
     def _load_jetbrains_details(self, text_widget, jetbrains_info):
         """加载JetBrains详细信息"""
@@ -1927,36 +1937,37 @@ class AugmentCleanerGUI:
 
                     text_widget.insert(tk.END, f"\n{i}. {file_path.name}\n")
                     text_widget.insert(tk.END, f"   📁 路径: {file_path}\n")
-                    text_widget.insert(tk.END, f"   📏 大小: {size} 字节\n")
-                    text_widget.insert(tk.END, f"   🕒 修改时间: {mtime}\n")
-                    text_widget.insert(tk.END, f"   🔒 锁定状态: {'✅ 已锁定' if is_locked else '❌ 未锁定'}\n")
+                    text_widget.insert(tk.END, t("view_info_chinese.size", size=size) + "\n")
+                    text_widget.insert(tk.END, t("view_info_chinese.modified_time", mtime=mtime) + "\n")
+                    lock_status_text = "✅ Đã khóa" if is_locked else "❌ Chưa khóa"
+                    text_widget.insert(tk.END, t("view_info_chinese.lock_status", status=lock_status_text) + "\n")
 
-                    # 读取当前ID
+                    # Đọc ID hiện tại
                     try:
                         if file_path.exists():
                             if file_path.name == "machineId":
                                 current_id = file_path.read_text(encoding='utf-8').strip()
                                 display_id = current_id[:32] + ('...' if len(current_id) > 32 else '')
-                                text_widget.insert(tk.END, f"   🆔 当前ID: {display_id}\n")
+                                text_widget.insert(tk.END, t("view_info_chinese.current_id", id=display_id) + "\n")
                             elif file_path.name == "storage.json":
                                 import json
-                                with open(file_path, 'r', encoding='utf-8') as f:
+                                with open(file_path, 'r', encoding='utf-8-sig') as f:
                                     data = json.load(f)
-                                text_widget.insert(tk.END, f"   🆔 包含的ID:\n")
+                                text_widget.insert(tk.END, t("view_info_chinese.contains_ids") + "\n")
                                 for key in ["telemetry.machineId", "telemetry.devDeviceId", "telemetry.sqmId"]:
                                     if key in data:
                                         value = str(data[key])[:32] + ('...' if len(str(data[key])) > 32 else '')
-                                        text_widget.insert(tk.END, f"      • {key}: {value}\n")
+                                        text_widget.insert(tk.END, t("view_info_chinese.id_item", key=key, value=value) + "\n")
                     except Exception as e:
-                        text_widget.insert(tk.END, f"   🆔 当前ID: 读取失败 ({e})\n")
+                        text_widget.insert(tk.END, t("view_info_chinese.read_failed", error=str(e)) + "\n")
             except Exception as e:
-                text_widget.insert(tk.END, f"❌ 获取存储文件失败: {e}\n")
+                text_widget.insert(tk.END, t("view_info_chinese.get_storage_failed", error=str(e)) + "\n")
         else:
-            text_widget.insert(tk.END, "❌ 未检测到VSCode/Cursor安装\n\n")
-            text_widget.insert(tk.END, "💡 可能的原因:\n")
-            text_widget.insert(tk.END, "   • VSCode/Cursor未安装\n")
-            text_widget.insert(tk.END, "   • 配置目录不在标准位置\n")
-            text_widget.insert(tk.END, "   • 权限不足无法访问配置目录\n")
+            text_widget.insert(tk.END, t("view_info_chinese.not_detected") + "\n\n")
+            text_widget.insert(tk.END, t("view_info_chinese.possible_reasons") + "\n")
+            text_widget.insert(tk.END, t("view_info_chinese.not_installed") + "\n")
+            text_widget.insert(tk.END, t("view_info_chinese.not_standard") + "\n")
+            text_widget.insert(tk.END, t("view_info_chinese.no_permission") + "\n")
 
     def _load_database_details(self, text_widget, db_info):
         """加载数据库详细信息"""
@@ -2072,9 +2083,9 @@ class AugmentCleanerGUI:
             text_widget.insert(tk.END, f"详细错误:\n{traceback.format_exc()}")
 
     def show_current_ids(self):
-        """显示当前ID"""
+        """Hiển thị ID hiện tại"""
         ids_window = tk.Toplevel(self.root)
-        ids_window.title("当前ID值")
+        ids_window.title(t("current_ids.window_title"))
         ids_window.geometry("700x400")
         ids_window.transient(self.root)
         
@@ -2083,30 +2094,30 @@ class AugmentCleanerGUI:
         
         def load_ids():
             try:
-                ids_text.insert(tk.END, "当前ID值\n")
+                ids_text.insert(tk.END, t("current_ids.header") + "\n")
                 ids_text.insert(tk.END, "=" * 50 + "\n\n")
                 
-                # JetBrains系列软件 IDs
+                # IDs phần mềm JetBrains
                 jetbrains_ids = self.jetbrains_handler.get_current_jetbrains_ids()
-                ids_text.insert(tk.END, "🔧 JetBrains系列软件:\n")
+                ids_text.insert(tk.END, t("current_ids.jetbrains_title") + "\n")
                 if jetbrains_ids:
-                    # 获取JetBrains安装信息来显示具体软件名称
+                    # Lấy thông tin cài đặt JetBrains để hiển thị tên phần mềm cụ thể
                     jetbrains_info = self.jetbrains_handler.verify_jetbrains_installation()
                     for file_name, id_value in jetbrains_ids.items():
                         status = "✅" if id_value else "❌"
-                        # 从文件路径推断软件名称
+                        # Suy luận tên phần mềm từ đường dẫn file
                         software_name = self._get_jetbrains_software_name(file_name, jetbrains_info)
-                        ids_text.insert(tk.END, f"   {status} {software_name}: {id_value or '未找到'}\n")
+                        ids_text.insert(tk.END, f"   {status} {software_name}: {id_value or t('current_ids.not_found')}\n")
                 else:
-                    ids_text.insert(tk.END, "   ❌ 未找到IDEA/PyCharm等软件安装\n")
+                    ids_text.insert(tk.END, t("current_ids.jetbrains_not_found") + "\n")
                 ids_text.insert(tk.END, "\n")
 
-                # VSCode和Cursor分离显示
+                # Hiển thị riêng VSCode và Cursor
                 vscode_ids = self.vscode_handler.get_current_vscode_ids()
 
                 # VSCode IDs
                 vscode_dirs = {k: v for k, v in vscode_ids.items() if 'cursor' not in k.lower()}
-                ids_text.insert(tk.END, "📝 VSCode:\n")
+                ids_text.insert(tk.END, t("current_ids.vscode_title") + "\n")
                 if vscode_dirs:
                     for directory, ids in vscode_dirs.items():
                         dir_name = Path(directory).name
@@ -2114,15 +2125,15 @@ class AugmentCleanerGUI:
                         ids_text.insert(tk.END, f"   📂 {parent_name}:\n")
                         for key, value in ids.items():
                             status = "✅" if value else "❌"
-                            display_value = value[:32] + '...' if value and len(value) > 32 else (value or '未找到')
+                            display_value = value[:32] + '...' if value and len(value) > 32 else (value or t('current_ids.not_found'))
                             ids_text.insert(tk.END, f"     {status} {key}: {display_value}\n")
                 else:
-                    ids_text.insert(tk.END, "   ❌ 未找到VSCode安装\n")
+                    ids_text.insert(tk.END, t("current_ids.vscode_not_found") + "\n")
                 ids_text.insert(tk.END, "\n")
 
                 # Cursor IDs
                 cursor_dirs = {k: v for k, v in vscode_ids.items() if 'cursor' in k.lower()}
-                ids_text.insert(tk.END, "🖱️ Cursor:\n")
+                ids_text.insert(tk.END, t("current_ids.cursor_title") + "\n")
                 if cursor_dirs:
                     for directory, ids in cursor_dirs.items():
                         dir_name = Path(directory).name
@@ -2130,14 +2141,14 @@ class AugmentCleanerGUI:
                         ids_text.insert(tk.END, f"   📂 {parent_name}:\n")
                         for key, value in ids.items():
                             status = "✅" if value else "❌"
-                            display_value = value[:32] + '...' if value and len(value) > 32 else (value or '未找到')
+                            display_value = value[:32] + '...' if value and len(value) > 32 else (value or t('current_ids.not_found'))
                             ids_text.insert(tk.END, f"     {status} {key}: {display_value}\n")
                 else:
-                    ids_text.insert(tk.END, "   ❌ 未找到Cursor安装\n")
+                    ids_text.insert(tk.END, t("current_ids.cursor_not_found") + "\n")
                 ids_text.insert(tk.END, "\n")
                 
             except Exception as e:
-                ids_text.insert(tk.END, f"获取ID失败: {e}")
+                ids_text.insert(tk.END, t("current_ids.get_ids_failed", error=str(e)))
         
         threading.Thread(target=load_ids, daemon=True).start()
     
@@ -2168,11 +2179,11 @@ class AugmentCleanerGUI:
 
             # 创建选择窗口
             restore_window = tk.Toplevel(self.root)
-            restore_window.title("选择要恢复的备份")
+            restore_window.title(t("restore.select_title"))
             restore_window.geometry("600x400")
             restore_window.transient(self.root)
 
-            tk.Label(restore_window, text="选择要恢复的备份:", font=("Arial", 12)).pack(pady=10)
+            tk.Label(restore_window, text=t("restore.select_label"), font=("Arial", 12)).pack(pady=10)
 
             # 备份列表
             listbox = tk.Listbox(restore_window, height=15)
@@ -2191,7 +2202,7 @@ class AugmentCleanerGUI:
             def do_restore():
                 selection = listbox.curselection()
                 if not selection:
-                    messagebox.showwarning("警告", "请选择要恢复的备份")
+                    messagebox.showwarning(t("restore.no_selection"), t("restore.no_selection_msg"))
                     return
 
                 backup_file = backup_files[selection[0]]
@@ -2262,8 +2273,8 @@ class AugmentCleanerGUI:
             button_frame = tk.Frame(restore_window)
             button_frame.pack(pady=10)
 
-            tk.Button(button_frame, text="恢复选中的备份", command=do_restore).pack(side=tk.LEFT, padx=5)
-            tk.Button(button_frame, text="取消", command=restore_window.destroy).pack(side=tk.LEFT, padx=5)
+            tk.Button(button_frame, text=t("restore.restore_button"), command=do_restore).pack(side=tk.LEFT, padx=5)
+            tk.Button(button_frame, text=t("restore.cancel_button"), command=restore_window.destroy).pack(side=tk.LEFT, padx=5)
 
         except Exception as e:
             messagebox.showerror("错误", f"无法访问备份: {e}")
@@ -2521,7 +2532,7 @@ class AugmentCleanerGUI:
             import json
 
             # 读取storage.json文件
-            with open(storage_file, 'r', encoding='utf-8') as f:
+            with open(storage_file, 'r', encoding='utf-8-sig') as f:
                 data = json.load(f)
 
             # 需要清理的认证相关键

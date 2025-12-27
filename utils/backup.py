@@ -405,7 +405,7 @@ class BackupManager:
                 return True
             elif backup_path.suffix.lower() == '.json':
                 # Verify JSON file integrity
-                with open(backup_path, 'r', encoding='utf-8') as f:
+                with open(backup_path, 'r', encoding='utf-8-sig') as f:
                     json.load(f)
                 return True
             else:

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Augment Cleaner Unified - Main Entry Point
+AugmentCode Unlimited - Điểm Vào Chính
 
-A comprehensive tool that combines the functionality of augment-vip and free-augmentcode
-for cleaning AugmentCode-related data and allowing unlimited logins with different accounts.
+Công cụ toàn diện để dọn dẹp dữ liệu liên quan AugmentCode
+và cho phép đăng nhập không giới hạn với các tài khoản khác nhau.
+Tập trung tối ưu cho Cursor IDE.
 """
 
 import argparse
@@ -13,8 +14,9 @@ import time
 from pathlib import Path
 from typing import Dict, Any
 
-# Import our modules
+# Import các module
 from config.settings import VERSION, APP_NAME, DEFAULT_SETTINGS, LOGGING_CONFIG
+from utils.i18n import t, init_translator
 from utils.paths import PathManager
 from utils.backup import BackupManager
 from utils.id_generator import IDGenerator
@@ -23,13 +25,16 @@ from core.jetbrains_handler import JetBrainsHandler
 from core.vscode_handler import VSCodeHandler
 from core.db_cleaner import DatabaseCleaner
 
+# Khởi tạo translator với tiếng Việt
+init_translator("vi")
+
 
 def setup_logging(verbose: bool = False) -> None:
     """
-    Setup logging configuration
+    Thiết lập cấu hình logging
     
     Args:
-        verbose: Enable verbose logging
+        verbose: Bật logging chi tiết
     """
     log_level = logging.DEBUG if verbose else logging.INFO
     
@@ -46,97 +51,97 @@ def setup_logging(verbose: bool = False) -> None:
 
 def create_argument_parser() -> argparse.ArgumentParser:
     """
-    Create and configure argument parser
+    Tạo và cấu hình argument parser
     
     Returns:
-        Configured ArgumentParser instance
+        ArgumentParser instance đã cấu hình
     """
     parser = argparse.ArgumentParser(
-        prog="augment-cleaner-unified",
-        description=f"{APP_NAME} v{VERSION} - Clean AugmentCode data for unlimited account switching",
-        epilog="For more information, see the README.md file."
+        prog="augmentcode-unlimited",
+        description=f"{APP_NAME} v{VERSION} - Dọn dẹp dữ liệu AugmentCode để chuyển đổi tài khoản không giới hạn",
+        epilog="Để biết thêm thông tin, xem file README.md."
     )
     
-    # Main operation modes
+    # Các chế độ hoạt động chính
     parser.add_argument(
         "--jetbrains-only",
         action="store_true",
-        help="Process only JetBrains IDEs"
+        help="Chỉ xử lý JetBrains IDEs"
     )
     
     parser.add_argument(
         "--vscode-only", 
         action="store_true",
-        help="Process only VSCode variants"
+        help="Chỉ xử lý VSCode variants (bao gồm Cursor)"
     )
     
-    # Backup options
+    # Tùy chọn backup
     parser.add_argument(
         "--no-backup",
         action="store_true",
-        help="Skip creating backups (not recommended)"
+        help="Bỏ qua tạo backup (không khuyến nghị)"
     )
     
-    # File locking options
+    # Tùy chọn khóa file
     parser.add_argument(
         "--no-lock",
         action="store_true", 
-        help="Skip locking files after modification"
+        help="Bỏ qua khóa file sau khi sửa"
     )
     
-    # Database cleaning options
+    # Tùy chọn dọn dẹp database
     parser.add_argument(
         "--no-database-clean",
         action="store_true",
-        help="Skip cleaning SQLite databases"
+        help="Bỏ qua dọn dẹp SQLite databases"
     )
     
-    # Workspace cleaning options
+    # Tùy chọn dọn dẹp workspace
     parser.add_argument(
         "--no-workspace-clean",
         action="store_true",
-        help="Skip cleaning workspace storage"
+        help="Bỏ qua dọn dẹp workspace storage"
     )
     
-    # Information options
+    # Tùy chọn thông tin
     parser.add_argument(
         "--info",
         action="store_true",
-        help="Show installation information and exit"
+        help="Hiển thị thông tin cài đặt và thoát"
     )
-    
+
     parser.add_argument(
         "--current-ids",
         action="store_true",
-        help="Show current ID values and exit"
+        help="Hiển thị giá trị ID hiện tại và thoát"
     )
 
     parser.add_argument(
         "--paths",
         action="store_true",
-        help="Show system paths and exit"
+        help="Hiển thị đường dẫn hệ thống và thoát"
     )
 
     parser.add_argument(
         "--legacy-output",
         action="store_true",
-        help="Use legacy free-augmentcode style output format"
+        help="Sử dụng định dạng output kiểu free-augmentcode cũ"
     )
     
-    # Output options
+    # Tùy chọn output
     parser.add_argument(
         "--verbose", "-v",
         action="store_true",
-        help="Enable verbose output"
+        help="Bật output chi tiết"
     )
     
     parser.add_argument(
         "--quiet", "-q",
         action="store_true",
-        help="Suppress non-error output"
+        help="Ẩn output không phải lỗi"
     )
     
-    # Version
+    # Phiên bản
     parser.add_argument(
         "--version",
         action="version",
@@ -147,146 +152,152 @@ def create_argument_parser() -> argparse.ArgumentParser:
 
 
 def print_banner() -> None:
-    """Print application banner"""
+    """In banner ứng dụng"""
     print(f"""
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                          {APP_NAME}                           ║
 ║                                 v{VERSION}                                  ║
 ║                                                                              ║
-║  A comprehensive tool for cleaning AugmentCode data and enabling unlimited   ║
-║  account switching on the same computer.                                     ║
+║  {t('cli.banner.description')}   ║
 ║                                                                              ║
-║  Supports: JetBrains IDEs, VSCode, VSCode Insiders, Cursor, and more        ║
+║  {t('cli.banner.supports')}        ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """)
 
 
 def print_system_paths(path_manager: PathManager) -> None:
     """
-    Print system paths information (from free-augmentcode)
+    In thông tin đường dẫn hệ thống
 
     Args:
-        path_manager: Path manager instance
+        path_manager: Instance quản lý đường dẫn
     """
     print("\n" + "="*80)
-    print("SYSTEM PATHS")
+    print(t("cli.paths.title"))
     print("="*80)
 
     platform_paths = path_manager.platform_paths
 
-    print(f"\n📁 System Directories:")
-    print(f"   Home Directory: {platform_paths['home']}")
-    print(f"   Config Directory: {platform_paths['config']}")
-    print(f"   Data Directory: {platform_paths['data']}")
+    print(f"\n{t('cli.paths.system_dirs')}")
+    print(t("cli.paths.home", path=str(platform_paths['home'])))
+    print(t("cli.paths.config", path=str(platform_paths['config'])))
+    print(t("cli.paths.data", path=str(platform_paths['data'])))
 
-    # VSCode specific paths
-    print(f"\n📝 VSCode Paths:")
+    # Đường dẫn VSCode (bao gồm Cursor)
+    print(f"\n{t('cli.paths.vscode_paths')}")
     workspace_path = path_manager.get_workspace_storage_path()
-    print(f"   Workspace Storage: {workspace_path or 'Not found'}")
+    print(t("cli.paths.workspace_storage", path=str(workspace_path) if workspace_path else t("cli.paths.not_found")))
 
-    # Show some example storage paths
+    # Hiển thị một số đường dẫn storage ví dụ
     vscode_dirs = path_manager.get_vscode_directories()
     if vscode_dirs:
-        print(f"   Example Storage Dirs:")
+        print(t("cli.paths.example_storage"))
         for i, vscode_dir in enumerate(vscode_dirs[:3]):
             storage_file = path_manager.get_vscode_storage_file(vscode_dir)
             db_file = path_manager.get_vscode_database_file(vscode_dir)
-            print(f"     {i+1}. Storage: {storage_file or 'N/A'}")
-            print(f"        Database: {db_file or 'N/A'}")
+            print(t("cli.paths.storage_item", num=i+1, path=str(storage_file) if storage_file else "N/A"))
+            print(t("cli.paths.database_item", path=str(db_file) if db_file else "N/A"))
         if len(vscode_dirs) > 3:
-            print(f"     ... and {len(vscode_dirs) - 3} more")
+            print(t("cli.paths.more", count=len(vscode_dirs) - 3))
 
-    # JetBrains specific paths
+    # Đường dẫn JetBrains
     jetbrains_dir = path_manager.get_jetbrains_config_dir()
-    print(f"\n🔧 JetBrains Paths:")
-    print(f"   Config Directory: {jetbrains_dir or 'Not found'}")
+    print(f"\n{t('cli.paths.jetbrains_paths')}")
+    print(t("cli.paths.config_dir", path=str(jetbrains_dir) if jetbrains_dir else t("cli.paths.not_found")))
     if jetbrains_dir:
         id_files = path_manager.get_jetbrains_id_files()
-        print(f"   ID Files:")
+        print(t("cli.paths.id_files"))
         for id_file in id_files:
-            print(f"     • {id_file}")
+            print(t("cli.paths.id_file_item", path=str(id_file)))
 
 
 def print_installation_info(jetbrains_handler: JetBrainsHandler, vscode_handler: VSCodeHandler, database_cleaner: DatabaseCleaner) -> None:
     """
-    Print installation information
+    In thông tin cài đặt
     
     Args:
-        jetbrains_handler: JetBrains handler instance
-        vscode_handler: VSCode handler instance
-        database_cleaner: Database cleaner instance
+        jetbrains_handler: Instance xử lý JetBrains
+        vscode_handler: Instance xử lý VSCode
+        database_cleaner: Instance dọn dẹp database
     """
     print("\n" + "="*80)
-    print("INSTALLATION INFORMATION")
+    print(t("cli.info.title"))
     print("="*80)
     
-    # JetBrains info
+    # Thông tin JetBrains
     jetbrains_info = jetbrains_handler.verify_jetbrains_installation()
-    print(f"\n🔧 JetBrains IDEs:")
-    print(f"   Installed: {'Yes' if jetbrains_info['installed'] else 'No'}")
+    print(f"\n{t('cli.info.jetbrains')}")
+    print(t("cli.info.installed", status=t("cli.info.yes") if jetbrains_info['installed'] else t("cli.info.no")))
     if jetbrains_info['installed']:
-        print(f"   Config Directory: {jetbrains_info['config_dir']}")
-        print(f"   ID Files Found: {len(jetbrains_info['existing_files'])}/{len(jetbrains_info['id_files'])}")
+        print(t("cli.info.config_dir", path=str(jetbrains_info['config_dir'])))
+        print(t("cli.info.id_files_found", found=len(jetbrains_info['existing_files']), total=len(jetbrains_info['id_files'])))
         for file_path in jetbrains_info['existing_files']:
-            print(f"     ✓ {file_path}")
+            print(f"     {t('cli.ids.found')} {file_path}")
         for file_path in jetbrains_info['missing_files']:
-            print(f"     ✗ {file_path}")
+            print(f"     {t('cli.ids.not_found')} {file_path}")
     
-    # VSCode info
+    # Thông tin VSCode (ưu tiên hiển thị Cursor)
     vscode_info = vscode_handler.verify_vscode_installation()
-    print(f"\n📝 VSCode Variants:")
-    print(f"   Installed: {'Yes' if vscode_info['installed'] else 'No'}")
+    print(f"\n{t('cli.info.vscode')}")
+    print(t("cli.info.installed", status=t("cli.info.yes") if vscode_info['installed'] else t("cli.info.no")))
     if vscode_info['installed']:
-        print(f"   Variants Found: {', '.join(vscode_info['variants_found'])}")
-        print(f"   Storage Directories: {vscode_info['total_directories']}")
-        for directory in vscode_info['storage_directories'][:5]:  # Show first 5
+        variants = vscode_info['variants_found']
+        # Sắp xếp để Cursor lên đầu
+        if 'Cursor' in variants:
+            variants.remove('Cursor')
+            variants.insert(0, 'Cursor')
+        print(t("cli.info.variants_found", variants=', '.join(variants)))
+        print(t("cli.info.storage_directories", count=vscode_info['total_directories']))
+        for directory in vscode_info['storage_directories'][:5]:  # Hiển thị 5 đầu tiên
             print(f"     • {directory}")
         if vscode_info['total_directories'] > 5:
-            print(f"     ... and {vscode_info['total_directories'] - 5} more")
+            print(t("cli.paths.more", count=vscode_info['total_directories'] - 5))
     
-    # Database info
+    # Thông tin Database
     db_info = database_cleaner.get_database_info()
-    print(f"\n🗃️ Databases:")
-    print(f"   Total Found: {db_info['total_databases']}")
-    print(f"   Accessible: {db_info['accessible_databases']}")
+    print(f"\n{t('cli.info.databases')}")
+    print(t("cli.info.total_found", count=db_info['total_databases']))
+    print(t("cli.info.accessible", count=db_info['accessible_databases']))
     
     total_augment_records = sum(db['augment_records'] for db in db_info['databases'] if db.get('augment_records'))
-    print(f"   AugmentCode Records: {total_augment_records}")
+    print(t("cli.info.augment_records", count=total_augment_records))
 
 
 def print_current_ids(jetbrains_handler: JetBrainsHandler, vscode_handler: VSCodeHandler) -> None:
     """
-    Print current ID values
+    In giá trị ID hiện tại
     
     Args:
-        jetbrains_handler: JetBrains handler instance
-        vscode_handler: VSCode handler instance
+        jetbrains_handler: Instance xử lý JetBrains
+        vscode_handler: Instance xử lý VSCode
     """
     print("\n" + "="*80)
-    print("CURRENT ID VALUES")
+    print(t("cli.ids.title"))
     print("="*80)
     
     # JetBrains IDs
     jetbrains_ids = jetbrains_handler.get_current_jetbrains_ids()
-    print(f"\n🔧 JetBrains IDs:")
+    print(f"\n{t('cli.ids.jetbrains')}")
     if jetbrains_ids:
         for file_name, id_value in jetbrains_ids.items():
-            status = "✓" if id_value else "✗"
-            print(f"   {status} {file_name}: {id_value or 'Not found'}")
+            status = t("cli.ids.found") if id_value else t("cli.ids.not_found")
+            print(f"   {status} {file_name}: {id_value or t('cli.paths.not_found')}")
     else:
-        print("   No JetBrains IDs found")
+        print(t("cli.ids.no_jetbrains"))
     
-    # VSCode IDs
+    # VSCode IDs (ưu tiên hiển thị Cursor)
     vscode_ids = vscode_handler.get_current_vscode_ids()
-    print(f"\n📝 VSCode IDs:")
+    print(f"\n{t('cli.ids.vscode')}")
     if vscode_ids:
-        for directory, ids in vscode_ids.items():
-            print(f"   Directory: {Path(directory).name}")
+        # Sắp xếp để Cursor lên đầu
+        sorted_dirs = sorted(vscode_ids.items(), key=lambda x: (0 if 'Cursor' in str(x[0]) else 1, str(x[0])))
+        for directory, ids in sorted_dirs:
+            print(t("cli.ids.directory", name=Path(directory).name))
             for key, value in ids.items():
-                status = "✓" if value else "✗"
-                print(f"     {status} {key}: {value or 'Not found'}")
+                status = t("cli.ids.found") if value else t("cli.ids.not_found")
+                print(f"     {status} {key}: {value or t('cli.paths.not_found')}")
     else:
-        print("   No VSCode IDs found")
+        print(t("cli.ids.no_vscode"))
 
 
 def main() -> int:
@@ -331,9 +342,9 @@ def main() -> int:
             print_system_paths(path_manager)
             return 0
         
-        # Validate arguments
+        # Kiểm tra arguments
         if args.jetbrains_only and args.vscode_only:
-            logger.error("Cannot specify both --jetbrains-only and --vscode-only")
+            logger.error(t("cli.errors.both_flags"))
             return 1
         
         # Determine what to process
@@ -356,10 +367,10 @@ def main() -> int:
         overall_success = False
         results = {}
         
-        # Process JetBrains IDEs
+        # Xử lý JetBrains IDEs
         if process_jetbrains:
             if not args.quiet:
-                print("\n🔧 Processing JetBrains IDEs...")
+                print(t("cli.processing.jetbrains"))
             
             jetbrains_result = jetbrains_handler.process_jetbrains_ides(
                 create_backups=create_backups,
@@ -370,32 +381,32 @@ def main() -> int:
             if jetbrains_result["success"]:
                 overall_success = True
                 if not args.quiet:
-                    print(f"   ✓ Processed {len(jetbrains_result['files_processed'])} JetBrains ID files")
+                    print(t("cli.processing.jetbrains_processed", count=len(jetbrains_result['files_processed'])))
 
-                    # Show detailed results like free-augmentcode
+                    # Hiển thị kết quả chi tiết
                     if jetbrains_result["old_ids"] and jetbrains_result["new_ids"]:
-                        print(f"   📋 ID Changes:")
+                        print("   📋 Thay đổi ID:")
                         for file_name in jetbrains_result["old_ids"]:
                             old_id = jetbrains_result["old_ids"].get(file_name, "N/A")
                             new_id = jetbrains_result["new_ids"].get(file_name, "N/A")
                             print(f"     {file_name}:")
-                            print(f"       Old: {old_id}")
-                            print(f"       New: {new_id}")
+                            print(f"       Cũ: {old_id}")
+                            print(f"       Mới: {new_id}")
 
                     if jetbrains_result["backups_created"]:
-                        print(f"   💾 Backups created:")
+                        print(t("cli.processing.backups_created", count=len(jetbrains_result['backups_created'])))
                         for backup in jetbrains_result["backups_created"]:
                             print(f"     • {backup}")
             else:
                 if not args.quiet:
-                    print(f"   ✗ JetBrains processing failed")
+                    print(t("cli.processing.jetbrains_failed"))
                     for error in jetbrains_result["errors"]:
-                        print(f"     Error: {error}")
+                        print(f"     Lỗi: {error}")
         
-        # Process VSCode variants
+        # Xử lý VSCode variants (ưu tiên Cursor)
         if process_vscode:
             if not args.quiet:
-                print("\n📝 Processing VSCode variants...")
+                print(t("cli.processing.vscode"))
             
             vscode_result = vscode_handler.process_vscode_installations(
                 create_backups=create_backups,
@@ -407,87 +418,87 @@ def main() -> int:
             if vscode_result["success"]:
                 overall_success = True
                 if not args.quiet:
-                    print(f"   ✓ Processed {len(vscode_result['directories_processed'])} VSCode directories")
+                    print(t("cli.processing.vscode_processed", count=len(vscode_result['directories_processed'])))
 
-                    # Show detailed results like free-augmentcode
+                    # Hiển thị kết quả chi tiết
                     if vscode_result["old_ids"] and vscode_result["new_ids"]:
-                        print(f"   📋 ID Changes:")
+                        print("   📋 Thay đổi ID:")
                         for key in vscode_result["old_ids"]:
                             old_id = vscode_result["old_ids"].get(key, "N/A")
                             new_id = vscode_result["new_ids"].get(key, "N/A")
                             print(f"     {key}:")
-                            print(f"       Old: {old_id}")
-                            print(f"       New: {new_id}")
+                            print(f"       Cũ: {old_id}")
+                            print(f"       Mới: {new_id}")
 
                     if vscode_result["backups_created"]:
-                        print(f"   💾 Backups created: {len(vscode_result['backups_created'])} files")
+                        print(t("cli.processing.backups_created", count=len(vscode_result['backups_created'])))
 
                     if vscode_result["workspace_cleaned"]:
-                        print(f"   ✓ Cleaned workspace storage")
+                        print(t("cli.processing.workspace_cleaned"))
                         if vscode_result["workspace_backup"]:
-                            print(f"     Workspace backup: {vscode_result['workspace_backup']}")
+                            print(t("cli.processing.workspace_backup", path=vscode_result['workspace_backup']))
             else:
                 if not args.quiet:
-                    print(f"   ✗ VSCode processing failed")
+                    print(t("cli.processing.vscode_failed"))
                     for error in vscode_result["errors"]:
-                        print(f"     Error: {error}")
+                        print(f"     Lỗi: {error}")
         
-        # Clean databases
+        # Dọn dẹp databases
         if clean_database and (process_vscode or not process_jetbrains):
             if not args.quiet:
-                print("\n🗃️ Cleaning databases...")
+                print(t("cli.processing.databases"))
             
             db_result = database_cleaner.clean_all_databases(create_backups=create_backups)
             results["database"] = db_result
             
             if db_result["success"]:
                 if not args.quiet:
-                    print(f"   ✓ Cleaned {db_result['databases_cleaned']} databases")
-                    print(f"   ✓ Deleted {db_result['total_records_deleted']} AugmentCode records")
+                    print(t("cli.processing.databases_cleaned", count=db_result['databases_cleaned']))
+                    print(t("cli.processing.records_deleted", count=db_result['total_records_deleted']))
 
-                    # Show detailed results like free-augmentcode
+                    # Hiển thị kết quả chi tiết
                     if db_result["backups_created"]:
-                        print(f"   💾 Database backups created: {len(db_result['backups_created'])} files")
+                        print(t("cli.processing.backups_created", count=len(db_result['backups_created'])))
 
-                    print(f"   📊 Database Summary:")
-                    print(f"     Total found: {db_result['databases_found']}")
-                    print(f"     Successfully cleaned: {db_result['databases_cleaned']}")
-                    print(f"     Failed: {db_result['databases_failed']}")
+                    print("   📊 Tóm tắt Database:")
+                    print(f"     Tổng tìm thấy: {db_result['databases_found']}")
+                    print(f"     Dọn dẹp thành công: {db_result['databases_cleaned']}")
+                    print(f"     Thất bại: {db_result['databases_failed']}")
             else:
                 if not args.quiet:
-                    print(f"   ✗ Database cleaning failed")
+                    print(t("cli.processing.database_failed"))
                     for error in db_result["errors"]:
-                        print(f"     Error: {error}")
+                        print(f"     Lỗi: {error}")
         
-        # Print summary
+        # In tóm tắt
         if not args.quiet:
             print("\n" + "="*80)
             if overall_success:
-                print("✅ OPERATION COMPLETED SUCCESSFULLY")
-                print("\nNext steps:")
-                print("1. Restart your IDE(s)")
-                print("2. Log in with a new AugmentCode account")
-                print("3. Enjoy unlimited account switching!")
+                print(t("cli.summary.success"))
+                print(f"\n{t('cli.summary.next_steps')}")
+                print(t("cli.summary.step_1"))
+                print(t("cli.summary.step_2"))
+                print(t("cli.summary.step_3"))
                 
                 if create_backups:
-                    print(f"\n💾 Backups created in: {backup_manager.backup_dir}")
+                    print(t("cli.summary.backups_location", path=str(backup_manager.backup_dir)))
             else:
-                print("❌ OPERATION FAILED")
-                print("\nSome operations failed. Check the errors above.")
-                print("You may need to run the tool with elevated permissions.")
+                print(t("cli.summary.failed"))
+                print(f"\n{t('cli.summary.some_failed')}")
+                print(t("cli.summary.need_permissions"))
             print("="*80)
         
         return 0 if overall_success else 1
         
     except KeyboardInterrupt:
-        logger.info("Operation cancelled by user")
+        logger.info("Thao tác đã bị hủy bởi người dùng")
         if not args.quiet:
-            print("\n\n⚠️  Operation cancelled by user")
+            print(t("cli.errors.cancelled"))
         return 1
     except Exception as e:
-        logger.error(f"Unexpected error: {e}", exc_info=True)
+        logger.error(f"Lỗi không mong đợi: {e}", exc_info=True)
         if not args.quiet:
-            print(f"\n❌ Unexpected error: {e}")
+            print(t("cli.errors.unexpected", error=str(e)))
         return 1
 
 

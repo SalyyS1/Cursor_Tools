@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-构建 Augment Cleaner Unified 的可执行文件
+Xây dựng file thực thi cho Augment Cleaner Unified
 
-使用 PyInstaller 将 GUI 版本打包成 exe 文件
+Sử dụng PyInstaller để đóng gói phiên bản GUI thành file exe
 """
 
 import os
@@ -12,76 +12,76 @@ import shutil
 from pathlib import Path
 
 def check_pyinstaller():
-    """检查 PyInstaller 是否安装"""
+    """Kiểm tra PyInstaller đã được cài đặt chưa"""
     try:
         import PyInstaller
-        print(f"✅ PyInstaller 已安装，版本: {PyInstaller.__version__}")
+        print(f"✅ PyInstaller đã được cài đặt, phiên bản: {PyInstaller.__version__}")
         return True
     except ImportError:
-        print("❌ PyInstaller 未安装")
+        print("❌ PyInstaller chưa được cài đặt")
         return False
 
 def install_pyinstaller():
-    """安装 PyInstaller"""
-    print("正在安装 PyInstaller...")
+    """Cài đặt PyInstaller"""
+    print("Đang cài đặt PyInstaller...")
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller>=5.0.0"])
-        print("✅ PyInstaller 安装成功")
+        print("✅ Cài đặt PyInstaller thành công")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ PyInstaller 安装失败: {e}")
-        print("\n💡 解决方案:")
-        print("1. 检查网络连接")
-        print("2. 尝试使用国内镜像源:")
+        print(f"❌ Cài đặt PyInstaller thất bại: {e}")
+        print("\n💡 Giải pháp:")
+        print("1. Kiểm tra kết nối mạng")
+        print("2. Thử sử dụng mirror nội địa:")
         print(f"   {sys.executable} -m pip install pyinstaller -i https://pypi.tuna.tsinghua.edu.cn/simple/")
-        print("3. 或者手动下载PyInstaller安装包")
-        print("4. 如果使用Anaconda，尝试: conda install pyinstaller -c conda-forge")
+        print("3. Hoặc tải xuống gói cài đặt PyInstaller thủ công")
+        print("4. Nếu sử dụng Anaconda, thử: conda install pyinstaller -c conda-forge")
         return False
 
 def create_icon():
-    """创建简单的图标文件（如果不存在）"""
+    """Tạo file icon đơn giản (nếu chưa tồn tại)"""
     icon_path = Path("icon.ico")
     if not icon_path.exists():
-        print("📝 创建默认图标...")
-        # 这里可以放置一个简单的图标创建逻辑
-        # 或者用户可以手动放置 icon.ico 文件
-        print("💡 提示: 您可以将 icon.ico 文件放在项目根目录来自定义图标")
+        print("📝 Đang tạo icon mặc định...")
+        # Có thể đặt logic tạo icon đơn giản ở đây
+        # Hoặc người dùng có thể đặt file icon.ico thủ công
+        print("💡 Gợi ý: Bạn có thể đặt file icon.ico trong thư mục gốc dự án để tùy chỉnh icon")
 
 def build_executable():
-    """构建可执行文件"""
-    print("🚀 开始构建可执行文件...")
+    """Xây dựng file thực thi"""
+    print("🚀 Bắt đầu xây dựng file thực thi...")
 
-    # 检查并关闭可能正在运行的exe文件
+    # Kiểm tra và đóng file exe có thể đang chạy
     exe_path = Path("dist") / "AugmentCleanerUnified.exe"
     if exe_path.exists():
-        print("⚠️ 检测到已存在的exe文件，尝试删除...")
+        print("⚠️ Phát hiện file exe đã tồn tại, đang thử xóa...")
         try:
             exe_path.unlink()
-            print("✅ 旧exe文件已删除")
+            print("✅ Đã xóa file exe cũ")
         except PermissionError:
-            print("⚠️ 无法删除旧exe文件（可能正在运行），PyInstaller会尝试覆盖")
+            print("⚠️ Không thể xóa file exe cũ (có thể đang chạy), PyInstaller sẽ thử ghi đè")
     
-    # PyInstaller 命令参数
+    # Tham số lệnh PyInstaller
     cmd = [
         "pyinstaller",
-        "--onefile",                    # 打包成单个文件
-        "--windowed",                   # 无控制台窗口
-        "--name=AugmentCleanerUnified", # 可执行文件名
-        "--distpath=dist",              # 输出目录
-        "--workpath=build",             # 临时文件目录
-        "--specpath=.",                 # spec文件位置
-        "--clean",                      # 清理临时文件
-        "--noconfirm",                  # 不询问覆盖
-        "gui_main.py"                   # 主文件
+        "--onefile",                    # Đóng gói thành một file
+        "--windowed",                   # Không có cửa sổ console
+        "--name=AugmentCleanerUnified", # Tên file thực thi
+        "--distpath=dist",              # Thư mục đầu ra
+        "--workpath=build",             # Thư mục file tạm
+        "--specpath=.",                 # Vị trí file spec
+        "--clean",                      # Dọn dẹp file tạm
+        "--noconfirm",                  # Không hỏi ghi đè
+        "gui_main.py"                   # File chính
     ]
     
-    # 添加图标（如果存在）
+    # Thêm icon (nếu có)
     icon_path = Path("icon.ico")
     if icon_path.exists():
         cmd.extend(["--icon", str(icon_path)])
-        print(f"📎 使用图标: {icon_path}")
+        print(f"📎 Sử dụng icon: {icon_path}")
     
-    # 添加隐藏导入（确保所有模块都被包含）
+    # Thêm import ẩn (đảm bảo tất cả module được bao gồm)
     hidden_imports = [
         "tkinter",
         "tkinter.ttk",
@@ -104,39 +104,39 @@ def build_executable():
     for module in hidden_imports:
         cmd.extend(["--hidden-import", module])
     
-    # 添加数据文件（如果需要）
+    # Thêm file dữ liệu (nếu cần)
     # cmd.extend(["--add-data", "config;config"])
     
-    print(f"执行命令: {' '.join(cmd)}")
+    print(f"Thực thi lệnh: {' '.join(cmd)}")
     
     try:
-        # 执行 PyInstaller
-        print("正在执行 PyInstaller...")
+        # Thực thi PyInstaller
+        print("Đang thực thi PyInstaller...")
         result = subprocess.run(cmd, check=False, capture_output=False, text=True)
 
-        # 检查输出文件
+        # Kiểm tra file đầu ra
         exe_path = Path("dist") / "AugmentCleanerUnified.exe"
         if exe_path.exists():
             size_mb = exe_path.stat().st_size / (1024 * 1024)
-            print("✅ 构建成功!")
-            print(f"📦 可执行文件: {exe_path}")
-            print(f"📏 文件大小: {size_mb:.1f} MB")
+            print("✅ Xây dựng thành công!")
+            print(f"📦 File thực thi: {exe_path}")
+            print(f"📏 Kích thước file: {size_mb:.1f} MB")
             return True
         else:
-            print("❌ 可执行文件未找到")
-            print(f"PyInstaller 返回代码: {result.returncode}")
+            print("❌ Không tìm thấy file thực thi")
+            print(f"Mã trả về PyInstaller: {result.returncode}")
             return False
 
     except Exception as e:
-        print(f"❌ 构建过程出现异常: {e}")
+        print(f"❌ Có lỗi trong quá trình xây dựng: {e}")
 
-        # 即使出现异常，也检查是否生成了exe文件
+        # Ngay cả khi có lỗi, cũng kiểm tra xem file exe đã được tạo chưa
         exe_path = Path("dist") / "AugmentCleanerUnified.exe"
         if exe_path.exists():
             size_mb = exe_path.stat().st_size / (1024 * 1024)
-            print("⚠️ 虽然有异常，但exe文件已生成!")
-            print(f"📦 可执行文件: {exe_path}")
-            print(f"📏 文件大小: {size_mb:.1f} MB")
+            print("⚠️ Mặc dù có lỗi, nhưng file exe đã được tạo!")
+            print(f"📦 File thực thi: {exe_path}")
+            print(f"📏 Kích thước file: {size_mb:.1f} MB")
             return True
 
         return False
@@ -144,107 +144,107 @@ def build_executable():
 
 
 def create_readme():
-    """创建使用说明"""
-    readme_content = """# Augment Cleaner Unified - 可执行版本
+    """Tạo hướng dẫn sử dụng"""
+    readme_content = """# Augment Cleaner Unified - Phiên bản thực thi
 
-## 🎯 简介
-这是 Augment Cleaner Unified 的图形界面版本，已打包成可执行文件，无需安装 Python 即可使用。
+## 🎯 Giới thiệu
+Đây là phiên bản giao diện đồ họa của Augment Cleaner Unified, đã được đóng gói thành file thực thi, không cần cài đặt Python để sử dụng.
 
-## 🚀 快速开始
+## 🚀 Bắt đầu nhanh
 
-1. 双击 `AugmentCleanerUnified.exe`
-2. 按照界面提示操作
+1. Nhấp đúp `AugmentCleanerUnified.exe`
+2. Làm theo hướng dẫn trên giao diện
 
-## 📋 使用步骤
+## 📋 Các bước sử dụng
 
-1. **准备工作**
-   - 关闭所有 IDE（VSCode、JetBrains IDEs、Cursor等）
-   - 退出 AugmentCode 插件
+1. **Chuẩn bị**
+   - Đóng tất cả IDE (VSCode, JetBrains IDEs, Cursor, v.v.)
+   - Thoát plugin AugmentCode
 
-2. **运行程序**
-   - 双击可执行文件启动
-   - 查看系统状态，确认检测到相关软件
+2. **Chạy chương trình**
+   - Nhấp đúp file thực thi để khởi động
+   - Xem trạng thái hệ thống, xác nhận đã phát hiện phần mềm liên quan
 
-3. **配置选项**
-   - 选择要处理的IDE类型
-   - 建议保持默认设置（创建备份、锁定文件等）
+3. **Cấu hình tùy chọn**
+   - Chọn loại IDE cần xử lý
+   - Khuyến nghị giữ cài đặt mặc định (tạo backup, khóa file, v.v.)
 
-4. **开始清理**
-   - 点击"🚀 开始清理"按钮
-   - 等待处理完成
+4. **Bắt đầu dọn dẹp**
+   - Nhấp nút "🚀 Bắt đầu dọn dẹp"
+   - Chờ quá trình xử lý hoàn tất
 
-5. **完成**
-   - 重启 IDE
-   - 使用新的 AugmentCode 账户登录
+5. **Hoàn tất**
+   - Khởi động lại IDE
+   - Đăng nhập với tài khoản AugmentCode mới
 
-## 🛡️ 安全特性
+## 🛡️ Tính năng bảo mật
 
-- ✅ **自动备份**: 修改前自动备份所有文件
-- ✅ **文件锁定**: 防止修改被覆盖
-- ✅ **详细日志**: 记录所有操作过程
-- ✅ **错误恢复**: 出错时可从备份恢复
+- ✅ **Tự động backup**: Tự động backup tất cả file trước khi sửa đổi
+- ✅ **Khóa file**: Ngăn chặn sửa đổi bị ghi đè
+- ✅ **Log chi tiết**: Ghi lại toàn bộ quá trình thao tác
+- ✅ **Khôi phục lỗi**: Có thể khôi phục từ backup khi gặp lỗi
 
-## 📁 备份位置
+## 📁 Vị trí backup
 
-备份文件保存在: `C:\\Users\\你的用户名\\.augment_cleaner_backups\\`
+File backup được lưu tại: `C:\\Users\\TênNgườiDùng\\.augment_cleaner_backups\\`
 
-## ❓ 常见问题
+## ❓ Câu hỏi thường gặp
 
-**Q: 程序无法启动？**
-A: 尝试以管理员身份运行，或检查杀毒软件是否误报
+**Q: Chương trình không khởi động được?**
+A: Thử chạy với quyền quản trị viên, hoặc kiểm tra phần mềm diệt virus có báo sai không
 
-**Q: 提示权限不足？**
-A: 以管理员身份运行程序
+**Q: Thông báo không đủ quyền?**
+A: Chạy chương trình với quyền quản trị viên
 
-**Q: 清理后还是无法切换账户？**
-A: 确保完全关闭了IDE，并重启后再登录
+**Q: Sau khi dọn dẹp vẫn không thể chuyển tài khoản?**
+A: Đảm bảo đã đóng hoàn toàn IDE, và khởi động lại trước khi đăng nhập
 
-**Q: 如何恢复原始设置？**
-A: 从备份目录恢复相应文件
+**Q: Làm thế nào để khôi phục cài đặt gốc?**
+A: Khôi phục file tương ứng từ thư mục backup
 
-## 📞 技术支持
+## 📞 Hỗ trợ kỹ thuật
 
-如有问题，请查看程序内的操作日志，或检查备份目录中的文件。
+Nếu có vấn đề, vui lòng xem log thao tác trong chương trình, hoặc kiểm tra file trong thư mục backup.
 
 ---
 
-**注意**: 此工具仅用于学习和研究目的，请遵守相关软件的使用条款。
+**Lưu ý**: Công cụ này chỉ dùng cho mục đích học tập và nghiên cứu, vui lòng tuân thủ các điều khoản sử dụng của phần mềm liên quan.
 """
     
     with open("README_EXE.md", "w", encoding="utf-8") as f:
         f.write(readme_content)
     
-    print("✅ 创建使用说明: README_EXE.md")
+    print("✅ Đã tạo hướng dẫn sử dụng: README_EXE.md")
 
 def main():
-    """主函数"""
-    print("🔨 Augment Cleaner Unified 构建工具")
+    """Hàm chính"""
+    print("🔨 Công cụ xây dựng Augment Cleaner Unified")
     print("=" * 50)
     
-    # 检查 PyInstaller
+    # Kiểm tra PyInstaller
     if not check_pyinstaller():
         if not install_pyinstaller():
-            print("❌ 无法安装 PyInstaller，构建失败")
+            print("❌ Không thể cài đặt PyInstaller, xây dựng thất bại")
             return False
     
-    # 创建图标
+    # Tạo icon
     create_icon()
     
-    # 构建可执行文件
+    # Xây dựng file thực thi
     if not build_executable():
-        print("❌ 构建失败")
+        print("❌ Xây dựng thất bại")
         return False
     
-    # 创建说明文件
+    # Tạo file hướng dẫn
     create_readme()
     
     print("\n" + "=" * 50)
-    print("🎉 构建完成！")
-    print("\n📦 输出文件:")
-    print("   - dist/AugmentCleanerUnified.exe  (主程序)")
-    print("   - README_EXE.md                   (使用说明)")
-    print("\n🚀 使用方法:")
-    print("   直接运行: 双击 AugmentCleanerUnified.exe")
+    print("🎉 Xây dựng hoàn tất!")
+    print("\n📦 File đầu ra:")
+    print("   - dist/AugmentCleanerUnified.exe  (Chương trình chính)")
+    print("   - README_EXE.md                   (Hướng dẫn sử dụng)")
+    print("\n🚀 Cách sử dụng:")
+    print("   Chạy trực tiếp: Nhấp đúp AugmentCleanerUnified.exe")
     
     return True
 

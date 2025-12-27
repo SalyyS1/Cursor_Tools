@@ -1,6 +1,12 @@
 # Core runtime dependencies
 psutil>=5.8.0
 
+# Windows service dependencies (Windows only)
+pywin32>=305; sys_platform == "win32"
+
+# Notification dependencies (optional)
+win10toast>=0.9; sys_platform == "win32"
+
 # Build dependencies (optional, only needed for creating exe)
 pyinstaller>=5.0.0
 
