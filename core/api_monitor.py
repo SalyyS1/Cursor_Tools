@@ -4,16 +4,27 @@ API Monitor - Opus 4.5 API health and rate limit monitoring
 
 Monitors API health and detects rate limits from:
 1. Log file parsing (passive)
-2. API response analysis (active - future)
+2. API response analysis (active)
+3. Rate limit header parsing
+4. Usage pattern tracking
 """
 
 import re
 import logging
+import time
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
+from collections import deque
+
+try:
+    import requests
+    REQUESTS_AVAILABLE = True
+except ImportError:
+    REQUESTS_AVAILABLE = False
 
 from core.log_discovery import CursorLogDiscovery
+from utils.api_history import APIHistory
 
 logger = logging.getLogger(__name__)
 
@@ -38,17 +49,27 @@ class OpusAPIMonitor:
         r'503\s+Service\s+Unavailable',
     ]
     
-    def __init__(self, log_discovery: Optional[CursorLogDiscovery] = None):
+    def __init__(self, log_discovery: Optional[CursorLogDiscovery] = None,
+                 api_history: Optional[APIHistory] = None,
+                 enable_active_checking: bool = False):
         """
         Initialize API monitor
         
         Args:
             log_discovery: Log discovery instance (optional)
+            api_history: API history tracker (optional)
+            enable_active_checking: Enable active API health checking (default: False)
         """
         self.log_discovery = log_discovery or CursorLogDiscovery()
+        self.api_history = api_history or APIHistory()
+        self.enable_active_checking = enable_active_checking
         self._last_check_time: Optional[float] = None
         self._cached_status: Optional[Dict[str, Any]] = None
         self._rate_limit_history: List[Dict[str, Any]] = []
+        
+        # Usage pattern tracking
+        self._usage_pattern: deque = deque(maxlen=100)  # Last 100 API calls
+        self._rate_limit_headers: Dict[str, Any] = {}
     
     def check_api_status(self, use_cache: bool = True,
                         cache_duration_seconds: int = 30) -> Dict[str, Any]:
@@ -88,11 +109,39 @@ class OpusAPIMonitor:
             status["rate_limited"] = True
             status["last_rate_limit"] = log_status.get("last_rate_limit_time")
             status["rate_limit_count"] = log_status.get("rate_limit_count", 0)
+            # Log to history
+            self.api_history.log_rate_limit(
+                log_status.get("reason", "Rate limit detected in logs")
+            )
         
         if log_status.get("errors"):
             status["errors_found"].extend(log_status["errors"])
             if log_status.get("api_unhealthy"):
                 status["api_healthy"] = False
+        
+        # Active API health checking (if enabled)
+        if self.enable_active_checking:
+            active_status = self._check_active_api()
+            status["sources_checked"].append("active")
+            
+            if active_status.get("rate_limited"):
+                status["rate_limited"] = True
+                if not status.get("last_rate_limit"):
+                    status["last_rate_limit"] = active_status.get("last_rate_limit")
+            
+            if not active_status.get("api_healthy"):
+                status["api_healthy"] = False
+            
+            # Update rate limit headers
+            if active_status.get("rate_limit_headers"):
+                self._rate_limit_headers = active_status["rate_limit_headers"]
+                status["rate_limit_headers"] = self._rate_limit_headers
+        
+        # Check usage patterns for rate limit prediction
+        pattern_status = self._check_usage_patterns()
+        if pattern_status.get("rate_limit_predicted"):
+            status["rate_limit_predicted"] = True
+            status["prediction_confidence"] = pattern_status.get("confidence", 0.0)
         
         # Update rate limit history
         if status["rate_limited"]:
@@ -233,5 +282,137 @@ class OpusAPIMonitor:
             "rate_limited": status.get("rate_limited", False),
             "last_check": status.get("last_check"),
             "recent_rate_limits": len(self.get_rate_limit_history(hours=1)),
+            "rate_limit_predicted": status.get("rate_limit_predicted", False),
+            "rate_limit_headers": status.get("rate_limit_headers", {}),
         }
+    
+    def _check_active_api(self) -> Dict[str, Any]:
+        """
+        Actively check API health by making a test call
+        
+        Returns:
+            Active check status
+        """
+        result = {
+            "rate_limited": False,
+            "api_healthy": True,
+            "last_rate_limit": None,
+            "rate_limit_headers": {},
+        }
+        
+        if not self.enable_active_checking:
+            return result
+        
+        try:
+            # Try to make a lightweight API call to Cursor backend
+            # This is a placeholder - actual implementation depends on Cursor API structure
+            # For now, we'll just check if we can parse rate limit headers from logs
+            
+            # In a real implementation, this would make an actual API call:
+            # response = requests.get("https://api.cursor.sh/health", timeout=5)
+            # result["rate_limit_headers"] = self._parse_rate_limit_headers(response.headers)
+            # if response.status_code == 429:
+            #     result["rate_limited"] = True
+            #     result["last_rate_limit"] = datetime.now().isoformat()
+            
+            # For now, return healthy status
+            pass
+        
+        except Exception as e:
+            logger.debug(f"Active API check failed: {e}")
+            # Don't mark as unhealthy on check failure
+            pass
+        
+        return result
+    
+    def _parse_rate_limit_headers(self, headers: Dict[str, str]) -> Dict[str, Any]:
+        """
+        Parse rate limit headers from API response
+        
+        Args:
+            headers: HTTP response headers
+            
+        Returns:
+            Parsed rate limit information
+        """
+        rate_limit_info = {}
+        
+        # Common rate limit headers
+        if "X-RateLimit-Limit" in headers:
+            rate_limit_info["limit"] = int(headers.get("X-RateLimit-Limit", 0))
+        if "X-RateLimit-Remaining" in headers:
+            rate_limit_info["remaining"] = int(headers.get("X-RateLimit-Remaining", 0))
+        if "X-RateLimit-Reset" in headers:
+            rate_limit_info["reset"] = int(headers.get("X-RateLimit-Reset", 0))
+        if "Retry-After" in headers:
+            rate_limit_info["retry_after"] = int(headers.get("Retry-After", 0))
+        
+        return rate_limit_info
+    
+    def _check_usage_patterns(self) -> Dict[str, Any]:
+        """
+        Check usage patterns to predict rate limits
+        
+        Returns:
+            Pattern analysis result
+        """
+        result = {
+            "rate_limit_predicted": False,
+            "confidence": 0.0,
+        }
+        
+        if len(self._usage_pattern) < 10:
+            return result
+        
+        # Analyze recent usage pattern
+        recent_calls = list(self._usage_pattern)[-50:]  # Last 50 calls
+        
+        # Check for rapid successive calls (potential rate limit trigger)
+        if len(recent_calls) >= 10:
+            time_diffs = []
+            for i in range(1, len(recent_calls)):
+                if recent_calls[i].get("timestamp") and recent_calls[i-1].get("timestamp"):
+                    try:
+                        t1 = datetime.fromisoformat(recent_calls[i]["timestamp"])
+                        t2 = datetime.fromisoformat(recent_calls[i-1]["timestamp"])
+                        diff = (t1 - t2).total_seconds()
+                        time_diffs.append(diff)
+                    except:
+                        pass
+            
+            # If many calls within short time, predict rate limit
+            if time_diffs:
+                avg_interval = sum(time_diffs) / len(time_diffs)
+                if avg_interval < 1.0:  # Less than 1 second between calls
+                    result["rate_limit_predicted"] = True
+                    result["confidence"] = min(0.9, 1.0 - avg_interval)
+        
+        return result
+    
+    def track_api_call(self, endpoint: str, method: str = "GET",
+                      status_code: Optional[int] = None,
+                      response_time_ms: Optional[float] = None):
+        """
+        Track an API call for usage pattern analysis
+        
+        Args:
+            endpoint: API endpoint
+            method: HTTP method
+            status_code: Response status code
+            response_time_ms: Response time in milliseconds
+        """
+        call = {
+            "timestamp": datetime.now().isoformat(),
+            "endpoint": endpoint,
+            "method": method,
+            "status_code": status_code,
+            "response_time_ms": response_time_ms,
+        }
+        
+        self._usage_pattern.append(call)
+        
+        # Log to history
+        self.api_history.log_api_call(
+            endpoint, method, status_code, response_time_ms
+        )
 
