@@ -211,6 +211,19 @@ except ImportError:
     COORDINATION_CONFIG = {}
     NOTIFICATION_CONFIG = {}
 
+# Account Pool Configuration
+ACCOUNT_POOL_CONFIG = {
+    "max_accounts": 2,  # Maximum number of accounts in pool
+    "pool_file": None,  # None = auto-detect (~/.cursor_rotation/account_pool.json)
+}
+
+# Rotation History Configuration
+ROTATION_HISTORY_CONFIG = {
+    "retention_days": 90,  # Number of days to retain history
+    "history_file": None,  # None = auto-detect (~/.cursor_rotation/rotation_history.json)
+    "max_rotations": 10000,  # Maximum number of rotations to store
+}
+
 # Export all configurations
 __all__ = [
     "VERSION",
