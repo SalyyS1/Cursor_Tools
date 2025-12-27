@@ -41,6 +41,28 @@
 
 -----
 
+### 🚀 快速开始
+
+#### 使用 run.bat (推荐)
+
+1. **双击 `run.bat`** 打开交互式菜单
+2. 选择所需功能：
+   - **[1] Launch GUI** - 启动图形界面
+   - **[2] Quick Rotation** - 快速旋转
+   - **[3] Check Status** - 检查状态
+   - **[4] Service Management** - 服务管理
+   - **[5] View Rotation History** - 查看旋转历史
+   - **[6] API Dashboard** - API 仪表板
+   - **[7] Configuration** - 配置目录
+
+#### 使用 GUI
+
+- **菜单栏**: File, Tools, View, Help
+- **标签页**: Main, Trial Dashboard, Control Panel, Rotation History, API Dashboard
+- **快捷键**: Ctrl+R (旋转), Ctrl+Q (退出), Ctrl+1-5 (切换标签)
+
+详细菜单指南请参考 [MENU_GUIDE.md](./MENU_GUIDE.md)
+
 ### ✨ 核心功能详解
 
 #### 🛡️ 企业级安全特性

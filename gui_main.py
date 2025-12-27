@@ -28,6 +28,10 @@ from utils.backup import BackupManager
 from core.jetbrains_handler import JetBrainsHandler
 from core.vscode_handler import VSCodeHandler
 from core.db_cleaner import DatabaseCleaner
+from core.token_monitor import TokenExpirationMonitor
+from core.api_monitor import OpusAPIMonitor
+from core.account_pool import AccountPool
+from utils.rotation_history import RotationHistory
 
 
 class ToolTip:
@@ -91,7 +95,14 @@ class AugmentCleanerGUI:
         self.jetbrains_handler = None
         self.vscode_handler = None
         self.database_cleaner = None
+        self.token_monitor = None
+        self.api_monitor = None
+        self.account_pool = None
+        self.rotation_history = None
 
+        # Tạo menu bar
+        self.create_menu_bar()
+        
         # Tạo giao diện
         self.create_widgets()
         self.initialize_components()
@@ -283,21 +294,104 @@ class AugmentCleanerGUI:
 
         except Exception:
             pass
+    
+    def create_menu_bar(self):
+        """Tạo menu bar"""
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+        
+        # File menu
+        file_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="New Rotation", command=self.manual_rotation, accelerator="Ctrl+R")
+        file_menu.add_separator()
+        file_menu.add_command(label="Open History", command=self.show_rotation_history_tab)
+        file_menu.add_command(label="Export Data", command=self.export_data)
+        file_menu.add_separator()
+        file_menu.add_command(label="Settings", command=self.show_settings)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.root.quit, accelerator="Ctrl+Q")
+        
+        # Tools menu
+        tools_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Tools", menu=tools_menu)
+        tools_menu.add_command(label="Quick Rotation", command=self.quick_rotation, accelerator="Ctrl+Shift+R")
+        tools_menu.add_command(label="Check Status", command=self.check_status)
+        tools_menu.add_separator()
+        tools_menu.add_command(label="Service Management", command=self.show_service_management)
+        tools_menu.add_command(label="API Monitor", command=self.show_api_dashboard_tab)
+        
+        # View menu
+        view_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="View", menu=view_menu)
+        view_menu.add_command(label="Main (Cleaning)", command=lambda: self.notebook.select(0), accelerator="Ctrl+1")
+        view_menu.add_command(label="Trial Dashboard", command=lambda: self.notebook.select(1), accelerator="Ctrl+2")
+        view_menu.add_command(label="Control Panel", command=lambda: self.notebook.select(2), accelerator="Ctrl+3")
+        view_menu.add_command(label="Rotation History", command=lambda: self.notebook.select(3), accelerator="Ctrl+4")
+        view_menu.add_command(label="API Dashboard", command=lambda: self.notebook.select(4), accelerator="Ctrl+5")
+        view_menu.add_separator()
+        view_menu.add_command(label="Log Viewer", command=self.show_log_viewer)
+        
+        # Help menu
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="Documentation", command=self.show_documentation)
+        help_menu.add_command(label="Keyboard Shortcuts", command=self.show_shortcuts)
+        help_menu.add_separator()
+        help_menu.add_command(label="About", command=self.show_about)
+        
+        # Keyboard shortcuts
+        self.root.bind("<Control-r>", lambda e: self.manual_rotation())
+        self.root.bind("<Control-R>", lambda e: self.manual_rotation())
+        self.root.bind("<Control-Shift-R>", lambda e: self.quick_rotation())
+        self.root.bind("<Control-q>", lambda e: self.root.quit())
+        self.root.bind("<Control-Q>", lambda e: self.root.quit())
+        self.root.bind("<Control-1>", lambda e: self.notebook.select(0))
+        self.root.bind("<Control-2>", lambda e: self.notebook.select(1))
+        self.root.bind("<Control-3>", lambda e: self.notebook.select(2))
+        self.root.bind("<Control-4>", lambda e: self.notebook.select(3))
+        self.root.bind("<Control-5>", lambda e: self.notebook.select(4))
         
     def create_widgets(self):
         """创建界面组件"""
-        # 主框架
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        # 创建Notebook (tabs)
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         # 配置网格权重
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
+        
+        # Tab 1: Main (Cleaning) - 保留原有界面
+        self.main_frame = ttk.Frame(self.notebook, padding="10")
+        self.notebook.add(self.main_frame, text="Main (Cleaning)")
+        self.create_main_tab()
+        
+        # Tab 2: Trial Dashboard
+        self.trial_frame = ttk.Frame(self.notebook, padding="10")
+        self.notebook.add(self.trial_frame, text="Trial Dashboard")
+        
+        # Tab 3: Control Panel
+        self.control_frame = ttk.Frame(self.notebook, padding="10")
+        self.notebook.add(self.control_frame, text="Control Panel")
+        
+        # Tab 4: Rotation History
+        self.history_frame = ttk.Frame(self.notebook, padding="10")
+        self.notebook.add(self.history_frame, text="Rotation History")
+        
+        # Tab 5: API Dashboard
+        self.api_frame = ttk.Frame(self.notebook, padding="10")
+        self.notebook.add(self.api_frame, text="API Dashboard")
+    
+    def create_main_tab(self):
+        """创建主标签页 (原有界面)"""
+        # 主框架
+        main_frame = self.main_frame
         main_frame.columnconfigure(1, weight=1)
         main_frame.rowconfigure(4, weight=1)
         
         # 超级标题 - 比 augment-new 更炫酷
-        title_frame = ttk.Frame(main_frame)
+        title_frame = ttk.Frame(self.main_frame)
         title_frame.grid(row=0, column=0, columnspan=2, pady=(0, 20))
 
         title_label = ttk.Label(title_frame, text="🚀 Augment Unlimited Pro",
@@ -313,7 +407,7 @@ class AugmentCleanerGUI:
         version_label.pack()
         
         # Khung thông tin trạng thái
-        status_frame = ttk.LabelFrame(main_frame, text=t("ui.status.title"), padding="10")
+        status_frame = ttk.LabelFrame(self.main_frame, text=t("ui.status.title"), padding="10")
         status_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         status_frame.columnconfigure(1, weight=1)
         
@@ -341,7 +435,7 @@ class AugmentCleanerGUI:
         self.bypass_network = tk.BooleanVar(value=False)  # Dấu vết mạng mặc định tắt
 
         # Khung chọn phản công giới hạn AugmentCode
-        bypass_frame = ttk.LabelFrame(main_frame, text=t("ui.bypass.title"), padding="15")
+        bypass_frame = ttk.LabelFrame(self.main_frame, text=t("ui.bypass.title"), padding="15")
         bypass_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
         bypass_frame.columnconfigure(0, weight=1)
         bypass_frame.columnconfigure(1, weight=1)
@@ -399,7 +493,7 @@ class AugmentCleanerGUI:
         network_desc.pack(anchor=tk.W, pady=(2, 0))
 
         # Khung tùy chọn nâng cao
-        advanced_frame = ttk.LabelFrame(main_frame, text=t("ui.advanced.title"), padding="10")
+        advanced_frame = ttk.LabelFrame(self.main_frame, text=t("ui.advanced.title"), padding="10")
         advanced_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
 
         # Tùy chọn backup
@@ -414,16 +508,16 @@ class AugmentCleanerGUI:
         backup_desc.pack(anchor=tk.W, pady=(2, 0))
 
         # Văn bản mô tả
-        info_frame = ttk.Frame(main_frame)
+        info_frame = ttk.Frame(self.main_frame)
         info_frame.grid(row=4, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
-
+        
         info_label = ttk.Label(info_frame,
                               text=t("ui.advanced.auto_desc"),
                               font=("Arial", 9), foreground="blue")
         info_label.pack(anchor=tk.W)
         
         # Khung nút
-        button_frame = ttk.Frame(main_frame)
+        button_frame = ttk.Frame(self.main_frame)
         button_frame.grid(row=5, column=0, columnspan=2, pady=(0, 10))
         
         # Nút chính
@@ -444,7 +538,7 @@ class AugmentCleanerGUI:
                   command=self.restore_backup).pack(side=tk.LEFT, padx=(0, 10))
         
         # Khung log
-        log_frame = ttk.LabelFrame(main_frame, text=t("ui.log.title"), padding="10")
+        log_frame = ttk.LabelFrame(self.main_frame, text=t("ui.log.title"), padding="10")
         log_frame.grid(row=6, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S))
         log_frame.columnconfigure(0, weight=1)
         log_frame.rowconfigure(0, weight=1)
@@ -458,7 +552,7 @@ class AugmentCleanerGUI:
                   command=self.clear_log).grid(row=1, column=0, sticky=tk.E, pady=(5, 0))
 
         # 进度条
-        self.progress = ttk.Progressbar(main_frame, mode='indeterminate')
+        self.progress = ttk.Progressbar(self.main_frame, mode='indeterminate')
         self.progress.grid(row=7, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(10, 0))
         
     def initialize_components(self):
@@ -470,12 +564,177 @@ class AugmentCleanerGUI:
             self.jetbrains_handler = JetBrainsHandler(self.path_manager, self.backup_manager)
             self.vscode_handler = VSCodeHandler(self.path_manager, self.backup_manager)
             self.database_cleaner = DatabaseCleaner(self.path_manager, self.backup_manager)
+            self.token_monitor = TokenExpirationMonitor(self.path_manager)
+            self.api_monitor = OpusAPIMonitor()
+            self.account_pool = AccountPool()
+            self.rotation_history = RotationHistory()
             self.log(t("messages.init.success"))
             # Trì hoãn cập nhật hiển thị trạng thái, tránh lag khi khởi động
             self.root.after(3000, self.update_status_display)
+            # Initialize widget tabs
+            self.root.after(1000, self.initialize_widget_tabs)
         except Exception as e:
             self.log(t("messages.init.failed", error=str(e)))
             messagebox.showerror(t("messages.init.error_title"), t("messages.init.failed", error=str(e)))
+    
+    def initialize_widget_tabs(self):
+        """Initialize widget tabs"""
+        try:
+            # Trial Dashboard
+            from gui.trial_dashboard import TrialDashboardWidget
+            if self.token_monitor and self.api_monitor:
+                # Create account pool manager if needed
+                if not self.account_pool:
+                    self.account_pool = AccountPoolManager()
+                trial_dashboard = TrialDashboardWidget(self.trial_frame, self.account_pool,
+                                                      self.token_monitor, self.api_monitor)
+                trial_dashboard.frame.pack(fill=tk.BOTH, expand=True)
+            
+            # Control Panel
+            from gui.control_panel import ControlPanelWidget
+            from core.rotation_scheduler import HybridRotationScheduler
+            scheduler = HybridRotationScheduler(self.token_monitor, self.api_monitor)
+            control_panel = ControlPanelWidget(self.control_frame, scheduler, 
+                                              on_settings_change=None)
+            control_panel.frame.pack(fill=tk.BOTH, expand=True)
+            
+            # Rotation History
+            from gui.rotation_history import RotationHistoryWidget
+            if self.rotation_history:
+                history_widget = RotationHistoryWidget(self.history_frame, self.rotation_history)
+                history_widget.frame.pack(fill=tk.BOTH, expand=True)
+            
+            # API Dashboard
+            from gui.api_dashboard import APIDashboardWidget
+            from utils.api_history import APIHistory
+            if self.api_monitor:
+                api_history = APIHistory()
+                api_dashboard = APIDashboardWidget(self.api_frame, self.api_monitor, api_history)
+                api_dashboard.frame.pack(fill=tk.BOTH, expand=True)
+        except Exception as e:
+            self.log(f"Warning: Failed to initialize some widgets: {e}")
+            import traceback
+            self.log(traceback.format_exc())
+    
+    def manual_rotation(self):
+        """Manual rotation"""
+        self.log("Starting manual rotation...")
+        # Trigger rotation
+        if messagebox.askyesno("Manual Rotation", "Start manual rotation?"):
+            self.start_cleaning()
+    
+    def quick_rotation(self):
+        """Quick rotation"""
+        self.log("Starting quick rotation...")
+        self.start_cleaning()
+    
+    def check_status(self):
+        """Check status"""
+        self.refresh_status()
+        messagebox.showinfo("Status", "Status refreshed. Check the log for details.")
+    
+    def show_service_management(self):
+        """Show service management dialog"""
+        from service.service_manager import ServiceManager
+        try:
+            sm = ServiceManager()
+            status = sm.get_service_status()
+            status_text = status.get('status', 'Unknown')
+            message = f"Service Status: {status_text}\n\n"
+            if status_text == "running":
+                message += "✅ Service is running and monitoring for rotation triggers."
+            elif status_text == "stopped":
+                message += "⚠️ Service is stopped. Use run.bat to start it."
+            elif status_text == "not_installed":
+                message += "ℹ️ Service is not installed. Use run.bat menu option 4d to install."
+            else:
+                message += f"Status: {status_text}"
+            messagebox.showinfo("Service Management", message)
+        except Exception as e:
+            error_msg = f"Failed to get service status:\n{str(e)}\n\n"
+            error_msg += "Possible causes:\n"
+            error_msg += "• pywin32 not installed (pip install pywin32)\n"
+            error_msg += "• Not running on Windows\n"
+            error_msg += "• Service not installed"
+            messagebox.showerror("Service Management Error", error_msg)
+    
+    def show_rotation_history_tab(self):
+        """Show rotation history tab"""
+        self.notebook.select(3)
+    
+    def show_api_dashboard_tab(self):
+        """Show API dashboard tab"""
+        self.notebook.select(4)
+    
+    def export_data(self):
+        """Export data"""
+        from tkinter import filedialog
+        file_path = filedialog.asksaveasfilename(defaultextension=".json", 
+                                                 filetypes=[("JSON", "*.json"), ("All", "*.*")])
+        if file_path:
+            if self.rotation_history:
+                self.rotation_history.export_history(Path(file_path), "json")
+                messagebox.showinfo("Export", "Data exported successfully!")
+    
+    def show_settings(self):
+        """Show settings"""
+        settings_window = tk.Toplevel(self.root)
+        settings_window.title("Settings")
+        settings_window.geometry("500x400")
+        settings_window.transient(self.root)
+        
+        # Settings content
+        settings_frame = ttk.Frame(settings_window, padding="20")
+        settings_frame.pack(fill=tk.BOTH, expand=True)
+        
+        ttk.Label(settings_frame, text="Settings", font=("Arial", 16, "bold")).pack(pady=(0, 20))
+        
+        # Backup settings
+        backup_frame = ttk.LabelFrame(settings_frame, text="Backup Settings", padding="10")
+        backup_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(backup_frame, text="Backup directory:").pack(anchor=tk.W)
+        backup_path_label = ttk.Label(backup_frame, text=str(self.backup_manager.backup_dir if self.backup_manager else "N/A"), 
+                                     foreground="gray")
+        backup_path_label.pack(anchor=tk.W, pady=(5, 0))
+        
+        # Rotation settings
+        rotation_frame = ttk.LabelFrame(settings_frame, text="Rotation Settings", padding="10")
+        rotation_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(rotation_frame, text="Rotation features are configured via Control Panel tab.").pack(anchor=tk.W)
+        
+        # Close button
+        ttk.Button(settings_frame, text="Close", command=settings_window.destroy).pack(pady=20)
+    
+    def show_log_viewer(self):
+        """Show log viewer"""
+        self.notebook.select(0)  # Main tab has log
+    
+    def show_documentation(self):
+        """Show documentation"""
+        messagebox.showinfo("Documentation", "Documentation (to be implemented)")
+    
+    def show_shortcuts(self):
+        """Show keyboard shortcuts"""
+        shortcuts = """Keyboard Shortcuts:
+        
+Ctrl+R / Ctrl+Shift+R: Quick Rotation
+Ctrl+Q: Exit
+Ctrl+1: Main Tab
+Ctrl+2: Trial Dashboard
+Ctrl+3: Control Panel
+Ctrl+4: Rotation History
+Ctrl+5: API Dashboard"""
+        messagebox.showinfo("Keyboard Shortcuts", shortcuts)
+    
+    def show_about(self):
+        """Show about dialog"""
+        about_text = f"""{APP_NAME} v{VERSION}
+
+Cursor Trial Rotation System
+Automated trial rotation with hybrid scheduling"""
+        messagebox.showinfo("About", about_text)
     
     def log(self, message, level="INFO"):
         """Thêm log"""

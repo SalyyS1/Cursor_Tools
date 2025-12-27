@@ -230,7 +230,7 @@ class VSCodeHandler:
                     logger.info(f"Created backup: {backup_path}")
             
             # Đọc dữ liệu hiện có
-            with open(storage_file, 'r', encoding='utf-8-sig') as f:
+            with open(storage_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
             # Xử lý device ID
@@ -695,7 +695,7 @@ class VSCodeHandler:
                 storage_file = vscode_dir / "storage.json"
                 if storage_file.exists():
                     try:
-                        with open(storage_file, 'r', encoding='utf-8-sig') as f:
+                        with open(storage_file, 'r', encoding='utf-8') as f:
                             data = json.load(f)
 
                         storage_ids = {}
@@ -773,7 +773,7 @@ class VSCodeHandler:
                     storage_file = vscode_dir / "storage.json"
                     if storage_file.exists():
                         try:
-                            with open(storage_file, 'r', encoding='utf-8-sig') as f:
+                            with open(storage_file, 'r', encoding='utf-8') as f:
                                 data = json.load(f)
 
                             # Trích xuất telemetry ID
@@ -809,26 +809,6 @@ class VSCodeHandler:
 
         return result
 
-    def perform_automated_rotation(self, 
-                                   create_backups: bool = True,
-                                   lock_files: bool = True) -> Dict[str, Any]:
-        """
-        Perform automated rotation (wrapper for rotation engine)
-        
-        Args:
-            create_backups: Create backups before rotation
-            lock_files: Lock files after rotation
-            
-        Returns:
-            Rotation result dictionary
-        """
-        return self.process_vscode_installations(
-            create_backups=create_backups,
-            lock_files=lock_files,
-            clean_workspace=False,
-            clean_cache=False
-        )
-    
     def _get_variant_name_from_path(self, path_str):
         """Lấy tên biến thể VSCode từ đường dẫn"""
         if 'Cursor' in path_str:
