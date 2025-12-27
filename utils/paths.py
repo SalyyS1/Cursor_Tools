@@ -20,8 +20,7 @@ class PathManager:
         self.platform_paths = get_platform_paths()
         self._jetbrains_dirs = None
         self._vscode_dirs = None
-        self._vscode_variant_map = {}  # 存储路径到变体名称的映射
-        self._vscode_variant_map = {}  # 存储路径到变体名称的映射
+        self._vscode_variant_map = {}  # Lưu trữ ánh xạ từ đường dẫn đến tên biến thể
     
     def get_jetbrains_config_dir(self) -> Optional[Path]:
         """
@@ -84,11 +83,11 @@ class PathManager:
 
         jetbrains_dir = self.get_jetbrains_config_dir()
         if jetbrains_dir and jetbrains_dir.exists():
-            # 扫描所有子目录中的数据库文件
+            # Quét tất cả file database trong các thư mục con
             for pattern in JETBRAINS_CONFIG["database_patterns"]:
                 db_files.extend(jetbrains_dir.rglob(pattern))
 
-            # 过滤出实际存在的文件
+            # Lọc ra các file thực sự tồn tại
             db_files = [f for f in db_files if f.is_file()]
             logger.info(f"Found {len(db_files)} JetBrains database files")
             for db_file in db_files:
@@ -107,11 +106,11 @@ class PathManager:
 
         jetbrains_dir = self.get_jetbrains_config_dir()
         if jetbrains_dir and jetbrains_dir.exists():
-            # 扫描缓存目录
+            # Quét các thư mục cache
             for cache_name in JETBRAINS_CONFIG["cache_dirs"]:
                 cache_dirs.extend(jetbrains_dir.rglob(cache_name))
 
-            # 过滤出实际存在的目录
+            # Lọc ra các thư mục thực sự tồn tại
             cache_dirs = [d for d in cache_dirs if d.is_dir()]
             logger.info(f"Found {len(cache_dirs)} JetBrains cache directories")
             for cache_dir in cache_dirs:
@@ -131,7 +130,7 @@ class PathManager:
 
         vscode_dirs = []
 
-        # 直接查找已知的VSCode变体目录
+        # Tìm trực tiếp các thư mục biến thể VSCode đã biết
         base_path = Path(self.platform_paths["config"])
 
         if not base_path.exists():
@@ -139,21 +138,27 @@ class PathManager:
             self._vscode_dirs = []
             return []
 
-        # 检查每个VSCode变体
-        for variant in VSCODE_CONFIG["vscode_variants"]:
+        # Kiểm tra từng biến thể VSCode (ưu tiên Cursor)
+        # Sắp xếp để Cursor được kiểm tra trước
+        variants = VSCODE_CONFIG["vscode_variants"].copy()
+        if "Cursor" in variants:
+            variants.remove("Cursor")
+            variants.insert(0, "Cursor")
+        
+        for variant in variants:
             variant_path = base_path / variant
 
             if variant_path.exists() and variant_path.is_dir():
-                logger.info(f"Found VSCode variant: {variant} at {variant_path}")
+                logger.info(f"Đã tìm thấy biến thể VSCode: {variant} tại {variant_path}")
 
-                # 查找存储目录
+                # Tìm các thư mục lưu trữ
                 storage_dirs = self._find_vscode_storage_dirs(variant_path)
-                # 为每个存储目录记录变体信息
+                # Ghi lại thông tin biến thể cho mỗi thư mục lưu trữ
                 for storage_dir in storage_dirs:
                     self._vscode_variant_map[str(storage_dir)] = variant
                 vscode_dirs.extend(storage_dirs)
 
-        # Remove duplicates while preserving mapping
+        # Loại bỏ trùng lặp nhưng giữ nguyên mapping
         seen = set()
         unique_dirs = []
         for vscode_dir in vscode_dirs:
@@ -162,7 +167,8 @@ class PathManager:
                 seen.add(dir_str)
                 unique_dirs.append(vscode_dir)
 
-        vscode_dirs = sorted(unique_dirs, key=str)
+        # Sắp xếp để Cursor lên đầu
+        vscode_dirs = sorted(unique_dirs, key=lambda x: (0 if 'Cursor' in str(x) else 1, str(x)))
 
         logger.info(f"Found {len(vscode_dirs)} VSCode storage directories")
         for vscode_dir in vscode_dirs:
@@ -220,13 +226,13 @@ class PathManager:
 
     def get_vscode_variant_name(self, storage_dir: Path) -> str:
         """
-        获取VSCode存储目录对应的变体名称
+        Lấy tên biến thể tương ứng với thư mục lưu trữ VSCode
 
         Args:
-            storage_dir: VSCode存储目录
+            storage_dir: Thư mục lưu trữ VSCode
 
         Returns:
-            变体名称 (Code, Cursor等)
+            Tên biến thể (Code, Cursor, v.v.)
         """
         return self._vscode_variant_map.get(str(storage_dir), 'Unknown')
 
@@ -350,3 +356,15 @@ class PathManager:
         except (OSError, ValueError) as e:
             logger.error(f"Error validating path {path}: {e}")
             return False
+    
+    def get_cursor_log_directories(self) -> List[Path]:
+        """
+        Get Cursor log directories (extends log discovery)
+        
+        Returns:
+            List of log directory paths
+        """
+        from core.log_discovery import CursorLogDiscovery
+        
+        log_discovery = CursorLogDiscovery()
+        return log_discovery.discover_cursor_logs()

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-VSCode Handler - VSCode/Cursor 处理模块
+VSCode Handler - Module Xử Lý VSCode/Cursor
 
-处理 VSCode 系列编辑器的设备ID、工作区存储和数据库清理
+Xử lý device ID, workspace storage và dọn dẹp database cho các trình chỉnh sửa VSCode
+Tập trung tối ưu cho Cursor IDE
 """
 
 import json
@@ -24,15 +25,15 @@ logger = logging.getLogger(__name__)
 
 
 class VSCodeHandler:
-    """VSCode 系列编辑器处理器"""
+    """Bộ xử lý các trình chỉnh sửa VSCode"""
     
     def __init__(self, path_manager, backup_manager):
         """
-        初始化 VSCode 处理器
+        Khởi tạo bộ xử lý VSCode
         
         Args:
-            path_manager: 路径管理器实例
-            backup_manager: 备份管理器实例
+            path_manager: Instance quản lý đường dẫn
+            backup_manager: Instance quản lý backup
         """
         self.path_manager = path_manager
         self.backup_manager = backup_manager
@@ -44,16 +45,16 @@ class VSCodeHandler:
                                    clean_workspace: bool = False,
                                    clean_cache: bool = False) -> Dict[str, Any]:
         """
-        处理所有 VSCode 安装
+        Xử lý tất cả cài đặt VSCode
         
         Args:
-            create_backups: 是否创建备份
-            lock_files: 是否锁定文件
-            clean_workspace: 是否清理工作区
-            clean_cache: 是否清理缓存
+            create_backups: Có tạo backup không
+            lock_files: Có khóa file không
+            clean_workspace: Có dọn dẹp workspace không
+            clean_cache: Có dọn dẹp cache không
             
         Returns:
-            处理结果字典
+            Dictionary kết quả xử lý
         """
         logger.info("Starting VSCode processing")
         
@@ -75,7 +76,7 @@ class VSCodeHandler:
         }
         
         try:
-            # 获取 VSCode 目录
+            # Lấy các thư mục VSCode
             vscode_dirs = self.path_manager.get_vscode_directories()
             if not vscode_dirs:
                 results["errors"].append("No VSCode installations found")
@@ -84,15 +85,15 @@ class VSCodeHandler:
             results["vscode_found"] = True
             results["total_directories"] = len(vscode_dirs)
             
-            # 处理每个 VSCode 目录
+            # Xử lý từng thư mục VSCode
             for vscode_dir in vscode_dirs:
                 try:
-                    # 获取变体名称
+                    # Lấy tên biến thể
                     variant_name = self.path_manager.get_vscode_variant_name(vscode_dir)
                     if variant_name not in results["variants_found"]:
                         results["variants_found"].append(variant_name)
                     
-                    # 处理设备ID文件
+                    # Xử lý file device ID
                     storage_result = self._process_storage_files(
                         vscode_dir, create_backups, lock_files
                     )
@@ -108,12 +109,12 @@ class VSCodeHandler:
                         results["files_failed"].extend(storage_result["files_failed"])
                         results["errors"].extend(storage_result["errors"])
                     
-                    # 清理工作区（如果需要）
+                    # Dọn dẹp workspace (nếu cần)
                     if clean_workspace:
                         workspace_result = self._clean_workspace_storage(vscode_dir, create_backups)
                         results["workspace_cleaned"] += workspace_result["cleaned_count"]
                     
-                    # 清理缓存（如果需要）
+                    # Dọn dẹp cache (nếu cần)
                     if clean_cache:
                         cache_result = self._clean_cache_directories(vscode_dir.parent, create_backups)
                         results["cache_cleaned"] += cache_result["cleaned_count"]
@@ -124,7 +125,7 @@ class VSCodeHandler:
                     results["errors"].append(error_msg)
                     results["directories_failed"] += 1
             
-            # 判断整体成功
+            # Đánh giá thành công tổng thể
             if results["directories_processed"] > 0:
                 results["success"] = True
                 logger.info(f"Successfully processed {results['directories_processed']} VSCode directories")
@@ -139,15 +140,15 @@ class VSCodeHandler:
     def _process_storage_files(self, vscode_dir: Path, create_backups: bool, 
                               lock_files: bool) -> Dict[str, Any]:
         """
-        处理存储文件（storage.json 和 state.vscdb）
+        Xử lý các file lưu trữ (storage.json và state.vscdb)
         
         Args:
-            vscode_dir: VSCode 目录路径
-            create_backups: 是否创建备份
-            lock_files: 是否锁定文件
+            vscode_dir: Đường dẫn thư mục VSCode
+            create_backups: Có tạo backup không
+            lock_files: Có khóa file không
             
         Returns:
-            处理结果字典
+            Dictionary kết quả xử lý
         """
         result = {
             "success": False,
@@ -160,7 +161,7 @@ class VSCodeHandler:
         }
         
         try:
-            # 处理 storage.json
+            # Xử lý storage.json
             storage_file = vscode_dir / "storage.json"
             if storage_file.exists():
                 storage_result = self._process_storage_json(storage_file, create_backups, lock_files)
@@ -174,7 +175,7 @@ class VSCodeHandler:
                     result["files_failed"].append(str(storage_file))
                     result["errors"].extend(storage_result["errors"])
             
-            # 处理 state.vscdb
+            # Xử lý state.vscdb
             db_file = vscode_dir / "state.vscdb"
             if db_file.exists():
                 db_result = self._process_state_database(db_file, create_backups, lock_files)
@@ -188,7 +189,7 @@ class VSCodeHandler:
                     result["files_failed"].append(str(db_file))
                     result["errors"].extend(db_result["errors"])
             
-            # 判断成功
+            # Đánh giá thành công
             if result["files_processed"]:
                 result["success"] = True
                 
@@ -202,15 +203,15 @@ class VSCodeHandler:
     def _process_storage_json(self, storage_file: Path, create_backups: bool, 
                              lock_files: bool) -> Dict[str, Any]:
         """
-        处理 storage.json 文件
+        Xử lý file storage.json
         
         Args:
-            storage_file: storage.json 文件路径
-            create_backups: 是否创建备份
-            lock_files: 是否锁定文件
+            storage_file: Đường dẫn file storage.json
+            create_backups: Có tạo backup không
+            lock_files: Có khóa file không
             
         Returns:
-            处理结果字典
+            Dictionary kết quả xử lý
         """
         result = {
             "success": False,
@@ -221,18 +222,18 @@ class VSCodeHandler:
         }
         
         try:
-            # 创建备份
+            # Tạo backup
             if create_backups:
                 backup_path = self.backup_manager.create_file_backup(storage_file)
                 if backup_path:
                     result["backup_path"] = str(backup_path)
                     logger.info(f"Created backup: {backup_path}")
             
-            # 读取现有数据
-            with open(storage_file, 'r', encoding='utf-8') as f:
+            # Đọc dữ liệu hiện có
+            with open(storage_file, 'r', encoding='utf-8-sig') as f:
                 data = json.load(f)
             
-            # 处理设备ID
+            # Xử lý device ID
             modified = False
             for key in VSCODE_CONFIG["telemetry_keys"]:
                 if key in data:
@@ -244,16 +245,16 @@ class VSCodeHandler:
                     modified = True
                     logger.info(f"Updated {key}: {old_value} -> {new_value}")
             
-            # 写入修改后的数据
+            # Ghi dữ liệu đã sửa đổi
             if modified:
-                # 移除只读属性
+                # Xóa thuộc tính chỉ đọc
                 if storage_file.exists():
                     storage_file.chmod(stat.S_IWRITE | stat.S_IREAD)
                 
                 with open(storage_file, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=2, ensure_ascii=False)
                 
-                # 锁定文件（如果需要）
+                # Khóa file (nếu cần)
                 if lock_files:
                     storage_file.chmod(stat.S_IREAD)
                     logger.info(f"Locked file: {storage_file}")
@@ -274,15 +275,15 @@ class VSCodeHandler:
     def _process_state_database(self, db_file: Path, create_backups: bool,
                                lock_files: bool) -> Dict[str, Any]:
         """
-        处理 state.vscdb 数据库文件
+        Xử lý file database state.vscdb
 
         Args:
-            db_file: 数据库文件路径
-            create_backups: 是否创建备份
-            lock_files: 是否锁定文件
+            db_file: Đường dẫn file database
+            create_backups: Có tạo backup không
+            lock_files: Có khóa file không
 
         Returns:
-            处理结果字典
+            Dictionary kết quả xử lý
         """
         result = {
             "success": False,
@@ -293,49 +294,49 @@ class VSCodeHandler:
         }
 
         try:
-            # 创建备份
+            # Tạo backup
             if create_backups:
                 backup_path = self.backup_manager.create_file_backup(db_file)
                 if backup_path:
                     result["backup_path"] = str(backup_path)
                     logger.info(f"Created backup: {backup_path}")
 
-            # 移除只读属性
+            # Xóa thuộc tính chỉ đọc
             if db_file.exists():
                 db_file.chmod(stat.S_IWRITE | stat.S_IREAD)
 
-            # 连接数据库
+            # Kết nối database
             conn = sqlite3.connect(str(db_file))
             cursor = conn.cursor()
 
             try:
-                # 查找包含设备ID的记录
+                # Tìm các bản ghi chứa device ID
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
                 tables = cursor.fetchall()
 
                 modified = False
                 for table_name, in tables:
                     try:
-                        # 获取表结构
+                        # Lấy cấu trúc bảng
                         cursor.execute(f"PRAGMA table_info({table_name})")
                         columns = cursor.fetchall()
 
-                        # 查找文本列
+                        # Tìm các cột text
                         text_columns = [col[1] for col in columns if col[2].upper() in ['TEXT', 'VARCHAR', 'CHAR']]
 
                         for column in text_columns:
                             for key in VSCODE_CONFIG["telemetry_keys"]:
-                                # 查找包含设备ID的记录
+                                # Tìm các bản ghi chứa device ID
                                 cursor.execute(f"SELECT rowid, {column} FROM {table_name} WHERE {column} LIKE ?", (f'%{key}%',))
                                 rows = cursor.fetchall()
 
                                 for rowid, value in rows:
                                     if key in str(value):
-                                        # 生成新的设备ID
+                                        # Tạo device ID mới
                                         new_id = self.id_generator.generate_device_id()
                                         new_value = str(value).replace(str(value), new_id)
 
-                                        # 更新记录
+                                        # Cập nhật bản ghi
                                         cursor.execute(f"UPDATE {table_name} SET {column} = ? WHERE rowid = ?", (new_value, rowid))
 
                                         result["old_ids"][f"{table_name}.{column}"] = value
@@ -348,7 +349,7 @@ class VSCodeHandler:
                         logger.warning(f"Could not process table {table_name}: {e}")
                         continue
 
-                # 提交更改
+                # Commit thay đổi
                 if modified:
                     conn.commit()
                     logger.info(f"Successfully updated database: {db_file}")
@@ -359,7 +360,7 @@ class VSCodeHandler:
                 cursor.close()
                 conn.close()
 
-            # 锁定文件（如果需要）
+            # Khóa file (nếu cần)
             if lock_files:
                 db_file.chmod(stat.S_IREAD)
                 logger.info(f"Locked file: {db_file}")
@@ -373,14 +374,14 @@ class VSCodeHandler:
 
     def _clean_workspace_storage(self, vscode_dir: Path, create_backups: bool) -> Dict[str, Any]:
         """
-        精确清理工作区存储 - 只清理AugmentCode相关记录，保护其他插件配置
+        Dọn dẹp chính xác workspace storage - Chỉ dọn dẹp các bản ghi liên quan AugmentCode, bảo vệ cấu hình plugin khác
 
         Args:
-            vscode_dir: VSCode 目录路径
-            create_backups: 是否创建备份
+            vscode_dir: Đường dẫn thư mục VSCode
+            create_backups: Có tạo backup không
 
         Returns:
-            清理结果字典
+            Dictionary kết quả dọn dẹp
         """
         result = {
             "success": False,
@@ -399,7 +400,7 @@ class VSCodeHandler:
 
             logger.info(f"Starting precise workspace cleaning: {workspace_dir}")
 
-            # 遍历每个项目目录
+            # Duyệt từng thư mục project
             for project_dir in workspace_dir.iterdir():
                 if not project_dir.is_dir():
                     continue
@@ -408,7 +409,7 @@ class VSCodeHandler:
                     result["projects_processed"] += 1
                     project_cleaned = False
 
-                    # 1. 清理项目数据库中的AugmentCode记录
+                    # 1. Dọn dẹp các bản ghi AugmentCode trong database project
                     project_db = project_dir / "state.vscdb"
                     if project_db.exists():
                         if create_backups:
@@ -422,7 +423,7 @@ class VSCodeHandler:
                             project_cleaned = True
                             logger.info(f"Cleaned {records_deleted} AugmentCode records from project {project_dir.name}")
 
-                    # 2. 清理AugmentCode插件专用目录（如果存在）
+                    # 2. Dọn dẹp thư mục chuyên dụng plugin AugmentCode (nếu tồn tại)
                     augment_dirs = [
                         project_dir / "augmentcode.augment",
                         project_dir / "augmentcode",
@@ -443,7 +444,7 @@ class VSCodeHandler:
                             except Exception as e:
                                 logger.warning(f"Could not remove AugmentCode directory {augment_dir}: {e}")
 
-                    # 3. 清理AugmentCode相关的配置文件
+                    # 3. Dọn dẹp các file cấu hình liên quan AugmentCode
                     augment_files = [
                         project_dir / "augment.json",
                         project_dir / "augmentcode.json",
@@ -484,18 +485,18 @@ class VSCodeHandler:
 
     def _clean_project_database(self, project_db: Path) -> int:
         """
-        精确清理项目数据库中的AugmentCode记录
+        Dọn dẹp chính xác các bản ghi AugmentCode trong database project
 
         Args:
-            project_db: 项目数据库文件路径
+            project_db: Đường dẫn file database project
 
         Returns:
-            删除的记录数量
+            Số lượng bản ghi đã xóa
         """
         records_deleted = 0
 
         try:
-            # 检查是否为有效的SQLite数据库
+            # Kiểm tra xem có phải database SQLite hợp lệ không
             if not self._is_valid_sqlite_database(project_db):
                 logger.debug(f"Skipping non-SQLite file: {project_db}")
                 return 0
@@ -504,27 +505,27 @@ class VSCodeHandler:
             cursor = conn.cursor()
 
             try:
-                # 检查ItemTable是否存在
+                # Kiểm tra ItemTable có tồn tại không
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ItemTable'")
                 if not cursor.fetchone():
                     logger.debug(f"No ItemTable found in {project_db}")
                     return 0
 
-                # AugmentCode相关的清理模式
+                # Các mẫu dọn dẹp liên quan AugmentCode
                 augment_patterns = [
-                    '%augment%',           # AugmentCode相关
-                    '%Augment%',           # 大写变体
-                    '%AUGMENT%',           # 全大写
-                    '%cursor.com%',        # Cursor域名相关
-                    '%workos%',            # WorkOS认证服务
-                    '%oauth%',             # OAuth状态
-                    '%auth%',              # 认证状态
-                    '%session%',           # 会话状态
-                    '%token%',             # 令牌
-                    '%login%'              # 登录状态
+                    '%augment%',           # Liên quan AugmentCode
+                    '%Augment%',           # Biến thể chữ hoa
+                    '%AUGMENT%',           # Tất cả chữ hoa
+                    '%cursor.com%',        # Liên quan domain Cursor
+                    '%workos%',            # Dịch vụ xác thực WorkOS
+                    '%oauth%',             # Trạng thái OAuth
+                    '%auth%',              # Trạng thái xác thực
+                    '%session%',           # Trạng thái phiên
+                    '%token%',             # Token
+                    '%login%'              # Trạng thái đăng nhập
                 ]
 
-                # 精确删除匹配的记录
+                # Xóa chính xác các bản ghi khớp
                 for pattern in augment_patterns:
                     cursor.execute("SELECT COUNT(*) FROM ItemTable WHERE key LIKE ?", (pattern,))
                     count = cursor.fetchone()[0]
@@ -534,7 +535,7 @@ class VSCodeHandler:
                         records_deleted += count
                         logger.debug(f"Deleted {count} records matching pattern {pattern}")
 
-                # 提交更改
+                # Commit thay đổi
                 if records_deleted > 0:
                     conn.commit()
                     logger.debug(f"Successfully deleted {records_deleted} AugmentCode records from {project_db}")
@@ -552,16 +553,16 @@ class VSCodeHandler:
 
     def _is_valid_sqlite_database(self, db_file: Path) -> bool:
         """
-        检查文件是否为有效的SQLite数据库
+        Kiểm tra file có phải database SQLite hợp lệ không
 
         Args:
-            db_file: 数据库文件路径
+            db_file: Đường dẫn file database
 
         Returns:
-            True if valid SQLite database, False otherwise
+            True nếu là database SQLite hợp lệ, False nếu không
         """
         try:
-            # SQLite文件以"SQLite format 3\000"开头
+            # File SQLite bắt đầu bằng "SQLite format 3\000"
             with open(db_file, 'rb') as f:
                 header = f.read(16)
                 return header.startswith(b'SQLite format 3\x00')
@@ -570,14 +571,14 @@ class VSCodeHandler:
 
     def _clean_cache_directories(self, vscode_root: Path, create_backups: bool) -> Dict[str, Any]:
         """
-        清理缓存目录
+        Dọn dẹp các thư mục cache
 
         Args:
-            vscode_root: VSCode 根目录路径
-            create_backups: 是否创建备份
+            vscode_root: Đường dẫn thư mục gốc VSCode
+            create_backups: Có tạo backup không
 
         Returns:
-            清理结果字典
+            Dictionary kết quả dọn dẹp
         """
         result = {
             "success": False,
@@ -597,7 +598,7 @@ class VSCodeHandler:
                             if backup_path:
                                 logger.info(f"Created cache backup: {backup_path}")
 
-                        # 清理缓存目录
+                        # Dọn dẹp thư mục cache
                         if cache_dir.is_dir():
                             shutil.rmtree(cache_dir)
                             result["cleaned_count"] += 1
@@ -618,10 +619,10 @@ class VSCodeHandler:
 
     def verify_vscode_installation(self) -> Dict[str, Any]:
         """
-        验证 VSCode 安装并返回信息
+        Xác minh cài đặt VSCode và trả về thông tin
 
         Returns:
-            安装信息字典
+            Dictionary thông tin cài đặt
         """
         info = {
             "installed": False,
@@ -634,27 +635,31 @@ class VSCodeHandler:
         }
 
         try:
-            # 获取 VSCode 目录
+            # Lấy các thư mục VSCode
             vscode_dirs = self.path_manager.get_vscode_directories()
             if vscode_dirs:
                 info["installed"] = True
                 info["total_directories"] = len(vscode_dirs)
                 info["storage_directories"] = [str(vscode_dir) for vscode_dir in vscode_dirs]
 
-                # 检查每个目录
+                # Kiểm tra từng thư mục (Cursor đã được ưu tiên từ paths.py)
                 for vscode_dir in vscode_dirs:
                     variant_name = self.path_manager.get_vscode_variant_name(vscode_dir)
                     if variant_name not in info["variants_found"]:
-                        info["variants_found"].append(variant_name)
+                        # Ưu tiên Cursor lên đầu danh sách
+                        if variant_name == "Cursor":
+                            info["variants_found"].insert(0, variant_name)
+                        else:
+                            info["variants_found"].append(variant_name)
 
-                    # 检查存储文件
+                    # Kiểm tra file lưu trữ
                     storage_file = vscode_dir / "storage.json"
                     if storage_file.exists():
                         info["storage_files"].append(str(storage_file))
                     else:
                         info["missing_files"].append(str(storage_file))
 
-                    # 检查数据库文件
+                    # Kiểm tra file database
                     db_file = vscode_dir / "state.vscdb"
                     if db_file.exists():
                         info["database_files"].append(str(db_file))
@@ -669,10 +674,10 @@ class VSCodeHandler:
 
     def get_current_device_ids(self) -> Dict[str, Any]:
         """
-        获取当前的设备ID
+        Lấy device ID hiện tại
 
         Returns:
-            设备ID信息字典
+            Dictionary thông tin device ID
         """
         ids = {
             "storage_ids": {},
@@ -686,11 +691,11 @@ class VSCodeHandler:
             for vscode_dir in vscode_dirs:
                 variant_name = vscode_dir.parent.name
 
-                # 读取 storage.json 中的ID
+                # Đọc ID từ storage.json
                 storage_file = vscode_dir / "storage.json"
                 if storage_file.exists():
                     try:
-                        with open(storage_file, 'r', encoding='utf-8') as f:
+                        with open(storage_file, 'r', encoding='utf-8-sig') as f:
                             data = json.load(f)
 
                         storage_ids = {}
@@ -704,19 +709,19 @@ class VSCodeHandler:
                     except Exception as e:
                         ids["errors"].append(f"Error reading {storage_file}: {str(e)}")
 
-                # 读取数据库中的ID（简化版本）
+                # Đọc ID từ database (phiên bản đơn giản)
                 db_file = vscode_dir / "state.vscdb"
                 if db_file.exists():
                     try:
                         conn = sqlite3.connect(str(db_file))
                         cursor = conn.cursor()
 
-                        # 查找包含设备ID的记录（简化查询）
+                        # Tìm các bản ghi chứa device ID (truy vấn đơn giản)
                         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
                         tables = cursor.fetchall()
 
                         db_ids = {}
-                        for table_name, in tables[:3]:  # 限制查询表数量
+                        for table_name, in tables[:3]:  # Giới hạn số lượng bảng truy vấn
                             try:
                                 cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
                                 rows = cursor.fetchall()
@@ -725,7 +730,7 @@ class VSCodeHandler:
                                         if isinstance(value, str):
                                             for key in VSCODE_CONFIG["telemetry_keys"]:
                                                 if key in value:
-                                                    db_ids[f"{table_name}"] = value[:100]  # 截断长值
+                                                    db_ids[f"{table_name}"] = value[:100]  # Cắt giá trị dài
                                                     break
                             except:
                                 continue
@@ -746,32 +751,32 @@ class VSCodeHandler:
 
     def get_current_vscode_ids(self):
         """
-        获取当前VSCode/Cursor的设备ID信息
+        Lấy thông tin device ID hiện tại của VSCode/Cursor
 
         Returns:
-            Dict[str, Dict]: 包含各个VSCode变体的ID信息
+            Dict[str, Dict]: Chứa thông tin ID của các biến thể VSCode
         """
         result = {}
 
         try:
-            # 获取所有VSCode目录
+            # Lấy tất cả thư mục VSCode
             vscode_dirs = self.path_manager.get_vscode_directories()
 
             for vscode_dir in vscode_dirs:
                 variant_name = self._get_variant_name_from_path(str(vscode_dir))
 
-                # 只处理globalStorage目录
+                # Chỉ xử lý thư mục globalStorage
                 if 'globalStorage' in str(vscode_dir):
                     variant_ids = {}
 
-                    # 检查storage.json文件
+                    # Kiểm tra file storage.json
                     storage_file = vscode_dir / "storage.json"
                     if storage_file.exists():
                         try:
-                            with open(storage_file, 'r', encoding='utf-8') as f:
+                            with open(storage_file, 'r', encoding='utf-8-sig') as f:
                                 data = json.load(f)
 
-                            # 提取遥测ID
+                            # Trích xuất telemetry ID
                             telemetry_keys = [
                                 'telemetry.machineId',
                                 'telemetry.devDeviceId',
@@ -786,7 +791,7 @@ class VSCodeHandler:
                         except Exception as e:
                             logger.warning(f"Could not read storage.json for {variant_name}: {e}")
 
-                    # 检查machineId文件
+                    # Kiểm tra file machineId
                     machine_id_file = vscode_dir.parent / "machineId"
                     if machine_id_file.exists():
                         try:
@@ -804,8 +809,28 @@ class VSCodeHandler:
 
         return result
 
+    def perform_automated_rotation(self, 
+                                   create_backups: bool = True,
+                                   lock_files: bool = True) -> Dict[str, Any]:
+        """
+        Perform automated rotation (wrapper for rotation engine)
+        
+        Args:
+            create_backups: Create backups before rotation
+            lock_files: Lock files after rotation
+            
+        Returns:
+            Rotation result dictionary
+        """
+        return self.process_vscode_installations(
+            create_backups=create_backups,
+            lock_files=lock_files,
+            clean_workspace=False,
+            clean_cache=False
+        )
+    
     def _get_variant_name_from_path(self, path_str):
-        """从路径获取VSCode变体名称"""
+        """Lấy tên biến thể VSCode từ đường dẫn"""
         if 'Cursor' in path_str:
             return 'Cursor'
         elif 'Code - Insiders' in path_str:

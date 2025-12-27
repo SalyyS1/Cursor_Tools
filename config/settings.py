@@ -1,32 +1,33 @@
 """
-Configuration settings for Augment Unlimited
+Cấu hình cho AugmentCode Unlimited
+Hệ thống bỏ qua giới hạn AugmentCode
 """
 
 import os
 import sys
 from pathlib import Path
 
-# Version information
+# Thông tin phiên bản
 VERSION = "2.0.0"
-APP_NAME = "Augment Unlimited"
+APP_NAME = "AugmentCode Unlimited"
 
-# Default settings
+# Cài đặt mặc định
 DEFAULT_SETTINGS = {
-    "create_backups": True,
-    "lock_files": True,
-    "clean_database": True,
-    "clean_workspace": True,
-    "verbose": False,
-    "force_delete": True,
+    "create_backups": True,      # Tự động tạo backup
+    "lock_files": True,           # Khóa file sau khi sửa
+    "clean_database": True,       # Dọn dẹp database
+    "clean_workspace": True,      # Dọn dẹp workspace
+    "verbose": False,             # Hiển thị log chi tiết
+    "force_delete": True,        # Xóa mạnh mẽ
 }
 
-# JetBrains configuration
+# Cấu hình JetBrains
 JETBRAINS_CONFIG = {
     "id_files": [
         "PermanentDeviceId",  # Base64: UGVybWFuZW50RGV2aWNlSWQ=
         "PermanentUserId",    # Base64: UGVybWFuZW50VXNlcklk
     ],
-    # Base64编码的文件名 (augment-vip兼容)
+    # Tên file mã hóa Base64 (tương thích augment-vip)
     "id_files_encoded": [
         "UGVybWFuZW50RGV2aWNlSWQ=",  # PermanentDeviceId
         "UGVybWFuZW50VXNlcklk",      # PermanentUserId
@@ -63,13 +64,13 @@ JETBRAINS_CONFIG = {
     ]
 }
 
-# VSCode configuration
+# Cấu hình VSCode (bao gồm Cursor)
 VSCODE_CONFIG = {
     "telemetry_keys": [
         "telemetry.machineId",      # Base64: dGVsZW1ldHJ5Lm1hY2hpbmVJZA==
         "telemetry.devDeviceId",    # Base64: dGVsZW1ldHJ5LmRldkRldmljZUlk
         "telemetry.macMachineId",   # Base64: dGVsZW1ldHJ5Lm1hY01hY2hpbmVJZA==
-        "telemetry.sqmId",          # Base64: dGVsZW1ldHJ5LnNxbUlk (缺失字段)
+        "telemetry.sqmId",          # Base64: dGVsZW1ldHJ5LnNxbUlk (trường thiếu)
     ],
     "storage_patterns": {
         "global": [
@@ -112,7 +113,7 @@ VSCODE_CONFIG = {
     ]
 }
 
-# Database configuration
+# Cấu hình Database
 DATABASE_CONFIG = {
     "augment_patterns": [
         "%augment%",
@@ -123,16 +124,16 @@ DATABASE_CONFIG = {
         "count": "SELECT COUNT(*) FROM ItemTable WHERE key LIKE ?",
         "delete": "DELETE FROM ItemTable WHERE key LIKE ?",
     },
-    # 精确的augment-vip兼容查询
+    # Truy vấn tương thích chính xác với augment-vip
     "precise_queries": {
         "count_augment": "SELECT COUNT(*) FROM ItemTable WHERE key LIKE '%augment%'",
         "delete_augment": "DELETE FROM ItemTable WHERE key LIKE '%augment%'",
     }
 }
 
-# Platform-specific paths
+# Đường dẫn theo nền tảng
 def get_platform_paths():
-    """Get platform-specific base directories"""
+    """Lấy thư mục cơ sở theo nền tảng"""
     if sys.platform == "win32":
         return {
             "config": os.getenv("APPDATA", ""),
@@ -145,40 +146,54 @@ def get_platform_paths():
             "data": Path.home() / "Library" / "Application Support",
             "home": Path.home(),
         }
-    else:  # Linux and other Unix-like systems
+    else:  # Linux và các hệ thống Unix-like khác
         return {
             "config": Path.home() / ".config",
             "data": Path.home() / ".local" / "share",
             "home": Path.home(),
         }
 
-# Backup configuration
+# Cấu hình Backup
 BACKUP_CONFIG = {
     "timestamp_format": "%Y%m%d_%H%M%S",
     "backup_extension": ".bak",
-    "max_backups": 10,  # Keep only the latest 10 backups
+    "max_backups": 10,  # Chỉ giữ 10 backup mới nhất
 }
 
-# Logging configuration
+# Cấu hình Logging
 LOGGING_CONFIG = {
     "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     "date_format": "%Y-%m-%d %H:%M:%S",
     "level": "INFO",
 }
 
-# File operation configuration
+# Cấu hình thao tác File
 FILE_CONFIG = {
     "encoding": "utf-8",
-    "chunk_size": 8192,  # For file operations
+    "chunk_size": 8192,  # Kích thước chunk cho thao tác file
     "max_retries": 3,
-    "retry_delay": 1,  # seconds
+    "retry_delay": 1,  # giây
 }
 
-# Security settings
+# Cài đặt Bảo mật
 SECURITY_CONFIG = {
     "verify_paths": True,
-    "safe_mode": True,  # Extra checks before destructive operations
-    "confirm_destructive": False,  # Ask for confirmation for destructive operations
+    "safe_mode": True,  # Kiểm tra thêm trước các thao tác phá hủy
+    "confirm_destructive": False,  # Hỏi xác nhận cho các thao tác phá hủy
+}
+
+# Cấu hình Rotation System
+ROTATION_CONFIG = {
+    "scheduled_interval_hours": 12.0,  # Scheduled rotation interval
+    "enable_token_check": True,       # Enable token expiration check
+    "enable_rate_limit_check": True,   # Enable rate limit check
+    "enable_scheduled_rotation": True,  # Enable scheduled rotation
+    "enable_advanced_fingerprint": False,  # Enable advanced fingerprinting (requires admin)
+    "log_discovery_cache_duration": 3600,  # Log discovery cache duration (seconds)
+    "token_check_cache_duration": 60,      # Token check cache duration (seconds)
+    "api_check_cache_duration": 30,        # API check cache duration (seconds)
+    "rotation_timeout_seconds": 60,        # Rotation timeout
+    "max_rotation_retries": 3,             # Maximum rotation retries
 }
 
 # Export all configurations
@@ -193,5 +208,6 @@ __all__ = [
     "LOGGING_CONFIG",
     "FILE_CONFIG",
     "SECURITY_CONFIG",
+    "ROTATION_CONFIG",
     "get_platform_paths",
 ]
