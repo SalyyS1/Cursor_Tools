@@ -583,11 +583,7 @@ class AugmentCleanerGUI:
             # Trial Dashboard
             from gui.trial_dashboard import TrialDashboardWidget
             if self.token_monitor and self.api_monitor:
-                # Create account pool manager if needed
-                if not self.account_pool:
-                    self.account_pool = AccountPoolManager()
-                trial_dashboard = TrialDashboardWidget(self.trial_frame, self.account_pool,
-                                                      self.token_monitor, self.api_monitor)
+                trial_dashboard = TrialDashboardWidget(self.trial_frame, self.token_monitor, self.api_monitor)
                 trial_dashboard.frame.pack(fill=tk.BOTH, expand=True)
             
             # Control Panel
